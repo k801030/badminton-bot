@@ -1,6 +1,7 @@
 username: BET2116709
 password: Happyshare4us!
-url: https://better-admin.org.uk/api/activities/venue/queensbridge-sports-community-centre/activity/badminton-40min
+location: queensbridge-sports-community-centre
+activity: badminton-40min
 keyword: "Court 4"
 slots:
   - start_time: "10:20"

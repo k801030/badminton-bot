@@ -24,17 +24,22 @@ def login(username, password):
     return data
 
 
-def get_courts_by_slot(token, date, start_time, end_time):
+def get_courts_by_slot(token, location, activity, date, start_time, end_time):
     SLEEP_INTERVAL = 1
+    url = (
+        "https://better-admin.org.uk/api/activities/venue/"
+        + location
+        + "/activity/"
+        + activity
+        + "/slots?date="
+        + date
+        + "&start_time="
+        + start_time
+        + "&end_time= "
+        + end_time
+    )
     while True:
-        url = (
-            "https://better-admin.org.uk/api/activities/venue/queensbridge-sports-community-centre/activity/badminton-40min/slots?date="
-            + date
-            + "&start_time="
-            + start_time
-            + "&end_time= "
-            + end_time
-        )
+        url = url
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -55,7 +60,7 @@ def get_courts_by_slot(token, date, start_time, end_time):
 
 def select(items, keyword):
     for item in items:
-        if keyword in item["location"]["name"]:
+        if keyword in item["location"]["name"] and item["spaces"] != 0:
             return item["id"]
 
 
@@ -72,21 +77,33 @@ def add(token, id):
     r = requests.post(url, json=body, headers=headers)
     data = r.json()
     if r.status_code != 200:
+        print(data)
         return False
     else:
         return True
 
 
-def add_court(token, date, start, end, keyword):
+def add_with_retry(token, id):
+    max = 3
+    count = 1
+    while count <= max:
+        if add(token, id):
+            return True
+        print("add retry " + str(count))
+        count = count + 1
+    return False
+
+
+def add_court(token, location, activity, date, start, end, keyword):
     title = "[ " + start + " - " + end + " ]"
     print("try to add court: " + title)
 
-    courts = get_courts_by_slot(token, date, start, end)
+    courts = get_courts_by_slot(token, location, activity, date, start, end)
     id = select(courts["data"], keyword)
     if id == None:
-        print("the target slot is not found: " + title)
+        print("the target slot is not found or full: " + title)
         return "FAILURE"
-    ok = add(token, id)
+    ok = add_with_retry(token, id)
     if ok == True:
         print("add to basket successfully: " + title)
         return "SCCUESS"
@@ -109,7 +126,8 @@ def read_from_yaml():
     config = Configuration(
         data["username"],
         data["password"],
-        data["url"],
+        data["location"],
+        data["activity"],
         data["keyword"],
         next_week(),
         slots,
@@ -131,6 +149,7 @@ if __name__ == "__main__":
     manager = multiprocessing.Manager()
 
     config = read_from_yaml()
+    config.date = "2023-10-31"
     token = ""
 
     try:
@@ -144,7 +163,15 @@ if __name__ == "__main__":
     args = []
     for slot in config.slots:
         args.append(
-            (token, config.date, slot.start_time, slot.end_time, config.keyword)
+            (
+                token,
+                config.location,
+                config.activity,
+                config.date,
+                slot.start_time,
+                slot.end_time,
+                config.keyword,
+            )
         )
 
     with Pool(numOfThreads) as pool:

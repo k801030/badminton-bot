@@ -1,8 +1,9 @@
 class Configuration:
-    def __init__(self, username, password, url, keyword, date, slots):
+    def __init__(self, username, password, location, activity, keyword, date, slots):
         self.username = username
         self.password = password
-        self.url = url
+        self.location = location
+        self.activity = activity
         self.keyword = keyword
         self.date = date
         self.slots = slots
