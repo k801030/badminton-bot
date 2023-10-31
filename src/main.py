@@ -95,6 +95,18 @@ def add_with_retry(token, id):
     return ok
 
 
+def cart(token):
+    url = "https://better-admin.org.uk/api/activities/cart"
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Origin": "https://myaccount.better.org.uk",
+        "Authorization": "Bearer " + token,
+    }
+    r = requests.get(url, headers=headers)
+    return r.json()
+
+
 def add_court(token, location, activity, date, start, end, keyword):
     title = "[ " + start + " - " + end + " ]"
     print("try to add court: " + title)

@@ -38,6 +38,20 @@ def lambda_handler(event, context):
     for process in processes:
         process.join()
 
-    output = "That took {} seconds".format(time.time() - starttime)
+    output = "Shopping cart:\n"
+    res = main.cart(token)
+    items = res["data"]["items"]
+    for item in items:
+        output += (
+            item["cartable_resource"]["starts_at"]["format_24_hour"]
+            + " - "
+            + item["cartable_resource"]["starts_at"]["format_24_hour"]
+            + " "
+            + item["cartable_resource"]["location"]["name"]
+            + "\n"
+        )
+    if len(items) == 0:
+        output += "(empty)\n"
+
     print(output)
     return output
