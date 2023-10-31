@@ -35,7 +35,7 @@ def get_courts_by_slot(token, location, activity, date, start_time, end_time):
         + date
         + "&start_time="
         + start_time
-        + "&end_time= "
+        + "&end_time="
         + end_time
     )
     while True:
@@ -86,12 +86,13 @@ def add(token, id):
 def add_with_retry(token, id):
     max = 3
     count = 1
+    ok = False
     while count <= max:
+        # add() 3 times
         if add(token, id):
-            return True
-        print("add retry " + str(count))
+            ok = True
         count = count + 1
-    return False
+    return ok
 
 
 def add_court(token, location, activity, date, start, end, keyword):
@@ -149,7 +150,6 @@ if __name__ == "__main__":
     manager = multiprocessing.Manager()
 
     config = read_from_yaml()
-    config.date = "2023-10-31"
     token = ""
 
     try:

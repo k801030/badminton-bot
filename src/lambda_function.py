@@ -1,10 +1,15 @@
-import datetime
-import time
 import multiprocessing
+import time
 from configuration import Configuration, Slot
 import requests
 import yaml
 import main
+
+
+def add_court_val(token, location, activity, date, start, end, keyword):
+    title = "[ " + start + " - " + end + " ]"
+    result = main.add_court(token, location, activity, date, start, end, keyword)
+    print(title + ": " + result)
 
 
 def lambda_handler(event, context):
@@ -16,7 +21,7 @@ def lambda_handler(event, context):
     processes = []
     for slot in config.slots:
         p = multiprocessing.Process(
-            target=main.add_court,
+            target=add_court_val,
             args=(
                 token,
                 config.location,
