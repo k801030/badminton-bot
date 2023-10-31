@@ -1,0 +1,11 @@
+username: BET3448609
+password: Happyshare4us!
+url: https://better-admin.org.uk/api/activities/venue/queensbridge-sports-community-centre/activity/badminton-40min
+keyword: "Court 4"
+slots:
+  - start_time: "10:20"
+    end_time: "11:00"
+  - start_time: "11:00"
+    end_time: "11:40"
+  - start_time: "11:40"
+    end_time: "12:20"
