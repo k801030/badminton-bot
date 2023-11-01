@@ -4,6 +4,7 @@ from configuration import Configuration, Slot
 import requests
 import yaml
 import main
+from sleep import sleep_until_10pm
 
 
 def add_court_val(token, location, activity, date, start, end, keyword):
@@ -17,6 +18,8 @@ def lambda_handler(event, context):
     config = main.read_from_yaml()
     user = main.login(config.username, config.password)
     token = user["token"]
+
+    # sleep_until_10pm()
 
     processes = []
     for slot in config.slots:
