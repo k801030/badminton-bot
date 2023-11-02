@@ -38,4 +38,6 @@ def lambda_handler(event, context):
 
     data = client.cart()
     main.print_cart(data)
-    return "number of items in cart: {}".format(len(data["data"]["items"]))
+
+    ids = main.get_ids_from_cart(client, data)
+    main.check_cart_then_add(client, ids)

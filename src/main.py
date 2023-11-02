@@ -65,17 +65,54 @@ def now():
     return datetime.datetime.now().isoformat().split(".")[0]
 
 
+def get_ids_from_cart(client: Client, data):
+    dict = {}
+    items = data["data"]["items"]
+    for item in items:
+        id = item["cartable_id"]
+        value = "{} - {} {}".format(
+            item["cartable_resource"]["starts_at"]["format_24_hour"],
+            item["cartable_resource"]["ends_at"]["format_24_hour"],
+            item["cartable_resource"]["location"]["name"],
+        )
+        dict[id] = value
+    return dict
+
+
+def check_cart_then_add(client: Client, ids: dict):
+    while True:
+        data = client.cart()
+        items = data["data"]["items"]
+        # items are missing
+        if len(ids) != len(items):
+            warn = "[WARN] items are missing, original={}, current={}".format(
+                len(ids), len(items)
+            )
+            print(warn)
+            add_missing_items(client, ids, items)
+        print("sleep for 5 secs")
+        time.sleep(5)
+
+
+def add_missing_items(client: Client, ids: dict, items):
+    item_ids = set()
+    for item in items:
+        item_ids.add(item["cartable_id"])
+
+    for id in ids:
+        if id not in item_ids:
+            print("item is missing: {}".format(ids[id]))
+            client.add(id)
+
+
 def print_cart(data):
     output = "[Shopping Cart]\n"
     items = data["data"]["items"]
     for item in items:
-        output += (
-            item["cartable_resource"]["starts_at"]["format_24_hour"]
-            + " - "
-            + item["cartable_resource"]["ends_at"]["format_24_hour"]
-            + " "
-            + item["cartable_resource"]["location"]["name"]
-            + "\n"
+        output += "{} - {} {}\n".format(
+            item["cartable_resource"]["starts_at"]["format_24_hour"],
+            item["cartable_resource"]["ends_at"]["format_24_hour"],
+            item["cartable_resource"]["location"]["name"],
         )
     if len(items) == 0:
         output += "(empty)\n"
@@ -123,3 +160,6 @@ if __name__ == "__main__":
     data = client.cart()
     print_cart(data)
     print("finished at " + now())
+
+    ids = get_ids_from_cart(client, data)
+    check_cart_then_add(client, ids)
