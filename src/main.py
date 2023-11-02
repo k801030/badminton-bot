@@ -6,119 +6,27 @@ import time
 from configuration import Configuration, Slot
 import requests
 import yaml
+from client import Client
 
 
-def login(username, password):
-    url = "https://better-admin.org.uk/api/auth/customer/login"
-    body = {"username": username, "password": password}
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Origin": "https://myaccount.better.org.uk",
-    }
-
-    r = requests.post(url, json=body, headers=headers)
-    data = r.json()
-    if data["status"] != "success":
-        raise Exception("invalid username/password")
-    return data
-
-
-def get_courts_by_slot(token, location, activity, date, start_time, end_time):
-    SLEEP_INTERVAL = 1
-    url = (
-        "https://better-admin.org.uk/api/activities/venue/"
-        + location
-        + "/activity/"
-        + activity
-        + "/slots?date="
-        + date
-        + "&start_time="
-        + start_time
-        + "&end_time="
-        + end_time
-    )
-    while True:
-        url = url
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Origin": "https://myaccount.better.org.uk",
-            "Authorization": "Bearer " + token,
-        }
-        r = requests.get(url, headers=headers)
-        data = r.json()
-
-        if (
-            r.status_code == 422
-            and "The date should be within the valid days" in data["message"]
-        ):
-            time.sleep(SLEEP_INTERVAL)
-            continue
-        return data
-
-
-def select(items, keyword):
+def select_court(items, keyword):
     for item in items:
         if keyword in item["location"]["name"] and item["spaces"] != 0:
             return item["id"]
 
 
-def add(token, id):
-    url = "https://better-admin.org.uk/api/activities/cart/add"
-    body = {"items": [{"id": id, "type": "activity"}]}
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Origin": "https://myaccount.better.org.uk",
-        "Authorization": "Bearer " + token,
-    }
-
-    r = requests.post(url, json=body, headers=headers)
-    data = r.json()
-    if r.status_code != 200:
-        print(data)
-        return False
-    else:
-        return True
-
-
-def add_with_retry(token, id):
-    max = 3
-    count = 1
-    ok = False
-    while count <= max:
-        # add() 3 times
-        if add(token, id):
-            ok = True
-        count = count + 1
-    return ok
-
-
-def cart(token):
-    url = "https://better-admin.org.uk/api/activities/cart"
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Origin": "https://myaccount.better.org.uk",
-        "Authorization": "Bearer " + token,
-    }
-    r = requests.get(url, headers=headers)
-    return r.json()
-
-
-def add_court(token, location, activity, date, start, end, keyword):
+def add_court(client: Client, location, activity, date, start, end, keyword):
     title = "[ " + start + " - " + end + " ]"
     print("try to add court: " + title)
 
-    courts = get_courts_by_slot(token, location, activity, date, start, end)
-    id = select(courts["data"], keyword)
+    courts = client.get_courts_by_slot(location, activity, date, start, end)
+    id = select_court(courts["data"], keyword)
     if id == None:
         print("the target slot is not found or full: " + title)
         return "FAILURE"
-    ok = add_with_retry(token, id)
+    ok = client.add(id)
     if ok == True:
-        print("add to basket successfully: " + title)
+        print("add item successfully: " + title)
         return "SCCUESS"
     else:
         print("fail to add item: " + title)
@@ -129,8 +37,8 @@ def multi_run_wrapper(args):
     return add_court(*args)
 
 
-def read_from_yaml():
-    with open("config.yaml", "r") as yamlfile:
+def read_from_yaml(file):
+    with open(file, "r") as yamlfile:
         data = yaml.load(yamlfile, Loader=yaml.FullLoader)
     slots = []
     for slot in data["slots"]:
@@ -157,16 +65,36 @@ def now():
     return datetime.datetime.now().isoformat().split(".")[0]
 
 
+def print_cart(data):
+    output = "[Shopping Cart]\n"
+    items = data["data"]["items"]
+    for item in items:
+        output += (
+            item["cartable_resource"]["starts_at"]["format_24_hour"]
+            + " - "
+            + item["cartable_resource"]["ends_at"]["format_24_hour"]
+            + " "
+            + item["cartable_resource"]["location"]["name"]
+            + "\n"
+        )
+    if len(items) == 0:
+        output += "(empty)\n"
+
+    print("----------------")
+    print(output)
+    print("----------------")
+
+
 if __name__ == "__main__":
     print("started at " + now())
     manager = multiprocessing.Manager()
 
-    config = read_from_yaml()
-    token = ""
+    config = read_from_yaml("test.yaml")
+
+    client = Client()
 
     try:
-        user = login(config.username, config.password)
-        token = user["token"]
+        client.login(config.username, config.password)
     except:
         print("invalid username/password")
         sys.exit()
@@ -176,7 +104,7 @@ if __name__ == "__main__":
     for slot in config.slots:
         args.append(
             (
-                token,
+                client,
                 config.location,
                 config.activity,
                 config.date,
@@ -191,5 +119,7 @@ if __name__ == "__main__":
             multi_run_wrapper,
             args,
         )
-    print(results)
+
+    data = client.cart()
+    print_cart(data)
     print("finished at " + now())

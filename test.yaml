@@ -1,0 +1,12 @@
+username: BET3448609
+password: Happyshare4us!
+location: queensbridge-sports-community-centre
+activity: badminton-40min
+keyword: "Court 1"
+slots:
+  - start_time: "17:20"
+    end_time: "18:00"
+  - start_time: "18:00"
+    end_time: "18:40"
+  - start_time: "18:40"
+    end_time: "19:20"
