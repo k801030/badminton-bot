@@ -90,6 +90,11 @@ def check_cart_then_add(client: Client, ids: dict):
             )
             print(warn)
             add_missing_items(client, ids, items)
+            data = client.cart()
+            if len(data["data"]["items"]) == 0:
+                print("cannot add any items, exit")
+                return
+
         print("sleep for 5 secs")
         time.sleep(5)
 

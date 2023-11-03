@@ -63,4 +63,13 @@ class Client:
     def cart(self):
         url = "{}/api/activities/cart".format(self.host)
         r = requests.get(url, headers=self.default_header)
-        return r.json()
+        data = r.json()
+        if r.status_code == 200:
+            return data
+        elif r.status_code == 409:
+            print("status_code={}, message={}".format(r.status_code, data))
+            time.sleep(2)
+            return self.cart()
+        else:
+            print("status_code={}, message={}".format(r.status_code, data))
+            return data
