@@ -36,8 +36,13 @@ def lambda_handler(event, context):
     for process in processes:
         process.join()
 
+    # print cart
     data = client.cart()
     main.print_cart(data)
 
+    # hold the items in cart
+    if len(data["data"]["items"]) == 0:
+        print("cart is empty, exit")
+        return
     ids = main.get_ids_from_cart(client, data)
     main.check_cart_then_add(client, ids)

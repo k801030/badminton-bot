@@ -17,7 +17,6 @@ def select_court(items, keyword):
 
 def add_court(client: Client, location, activity, date, start, end, keyword):
     title = "[ " + start + " - " + end + " ]"
-    print("try to add court: " + title)
 
     courts = client.get_courts_by_slot(location, activity, date, start, end)
     id = select_court(courts["data"], keyword)
@@ -95,8 +94,7 @@ def check_cart_then_add(client: Client, ids: dict):
                 print("cannot add any items, exit")
                 return
 
-        print("sleep for 5 secs")
-        time.sleep(5)
+        time.sleep(3)
 
 
 def add_missing_items(client: Client, ids: dict, items):
@@ -131,7 +129,7 @@ if __name__ == "__main__":
     print("started at " + now())
     manager = multiprocessing.Manager()
 
-    config = read_from_yaml("test.yaml")
+    config = read_from_yaml("config.yaml")
 
     client = Client()
 
