@@ -10,9 +10,11 @@ from client import Client
 
 
 def select_court(items, keyword):
-    for item in items:
-        if keyword in item["location"]["name"] and item["spaces"] != 0:
-            return item["id"]
+    keywords = keyword.split(",")
+    for k in keywords:
+        for item in items:
+            if k in item["location"]["name"] and item["spaces"] != 0:
+                return item["id"]
 
 
 def add_court(client: Client, location, activity, date, start, end, keyword):

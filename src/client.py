@@ -14,6 +14,7 @@ class Client:
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Origin": "https://myaccount.better.org.uk",
+            "User-Agent": "Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
         }
 
     def login(self, username, password):

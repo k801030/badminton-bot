@@ -2,7 +2,7 @@ username: BET3448609
 password: Happyshare4us!
 location: queensbridge-sports-community-centre
 activity: badminton-40min
-keyword: "Court 3"
+keyword: "Court 1,Court 3"
 slots:
   - start_time: "10:20"
     end_time: "11:00"
