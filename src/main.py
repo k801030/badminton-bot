@@ -4,34 +4,33 @@ import multiprocessing
 import sys
 import time
 from configuration import Configuration, Slot
-import requests
-import yaml
 from client import Client
 
 
-def select_court(items, keyword):
+def select_court(items, keyword) -> list[str]:
     keywords = keyword.split(",")
+    ids = []
     for k in keywords:
         for item in items:
-            if k in item["location"]["name"] and item["spaces"] != 0:
-                return item["id"]
+            if k in item["location"]["name"]:
+                ids.append(item["id"])
+    return ids
 
 
 def add_court(client: Client, location, activity, date, start, end, keyword):
     title = "[ " + start + " - " + end + " ]"
 
+    print(f"{title} get_courts_by_slot...")
     courts = client.get_courts_by_slot(location, activity, date, start, end)
-    id = select_court(courts["data"], keyword)
-    if id == None:
-        print("the target slot is not found or full: " + title)
-        return "FAILURE"
-    ok = client.add(id)
-    if ok == True:
-        print("add item successfully: " + title)
-        return "SCCUESS"
-    else:
-        print("fail to add item: " + title)
-        return "FAILURE"
+    print(f"{title} get_courts_by_slot result: {courts}")
+    ids = select_court(courts["data"], keyword)
+    while True:
+        for id in ids:
+            ok = client.add(id)
+            if ok == True:
+                print(f"add item successfully: {title}")
+                return "SCCUESS"
+        time.sleep(1)
 
 
 def multi_run_wrapper(args):
@@ -51,15 +50,15 @@ def read_from_yaml(file):
         data["location"],
         data["activity"],
         data["keyword"],
-        next_week(),
+        get_date(data["day"]),
         slots,
     )
     return config
 
 
-def next_week():
+def get_date(day):
     today = datetime.date.today()
-    return str(today + datetime.timedelta(days=7))
+    return str(today + datetime.timedelta(days=day))
 
 
 def now():

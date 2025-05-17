@@ -1,8 +1,6 @@
 import multiprocessing
 import time
 from configuration import Configuration, Slot
-import requests
-import yaml
 import main
 from client import Client
 

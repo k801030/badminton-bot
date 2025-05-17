@@ -52,13 +52,12 @@ class Client:
         data = r.json()
         if r.status_code == 200:
             return True
-        elif r.status_code == 409:
-            print("status_code={}, message={}".format(r.status_code, data))
-            return self.add(id)
-        elif r.status_code == 422:
-            print("status_code={}, message={}".format(r.status_code, data))
-        else:
-            print("status_code={}, message={}".format(r.status_code, data))
+        # elif r.status_code == 409:
+        #     print("status_code={}, message={}".format(r.status_code, data))
+        # elif r.status_code == 422:
+        #     print("status_code={}, message={}".format(r.status_code, data))
+        # else:
+        #     print("status_code={}, message={}".format(r.status_code, data))
         return False
 
     def cart(self):
