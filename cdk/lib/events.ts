@@ -35,8 +35,7 @@ export const EVENTS = [
                 "end_time": "22:00"
             }
         ]
-    }
-    ,
+    },
     {
         "accountId": "2",
         "location": "queensbridge-sports-community-centre",

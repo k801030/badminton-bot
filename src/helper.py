@@ -2,13 +2,13 @@ import datetime
 import json
 import time
 
-import boto3
 from botocore.exceptions import ClientError
 
 from client import Client
 from models.configuration import Configuration, Slot
 
 from models.account import Account
+from aws_session import session
 
 
 def multi_run_wrapper(args):
@@ -23,7 +23,6 @@ def get_account(account_id) -> Account:
     secret_id = f"account/{account_id}"
 
     # Create a Secrets Manager client
-    session = boto3.session.Session()
     client = session.client(
         service_name='secretsmanager',
         region_name=region_name
