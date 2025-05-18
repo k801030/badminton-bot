@@ -42,7 +42,7 @@ def get_account(account_id) -> Account:
     return Account(json_str["username"], json_str["password"])
 
 
-def read_from_json(data):
+def read_json_event(data):
     """
     Reads the json event and constructs a Configuration object.
     """
@@ -55,7 +55,7 @@ def read_from_json(data):
         data["location"],
         data["activity"],
         data["keyword"],
-        get_date(data["day"]),
+        get_date(data["day_offset"]),
         slots,
     )
     return config

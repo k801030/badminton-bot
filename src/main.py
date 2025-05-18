@@ -4,7 +4,7 @@ from multiprocessing import Pool
 
 from client import Client
 from helper import now, multi_run_wrapper, print_cart, get_ids_from_cart, reserve_the_items_in_cart, \
-    read_from_json, get_account
+    read_json_event, get_account
 
 
 sample_config = {
@@ -28,7 +28,7 @@ sample_config = {
 if __name__ == "__main__":
     print("started at " + now())
     manager = multiprocessing.Manager()
-    config = read_from_json(sample_config)
+    config = read_json_event(sample_config)
 
     client = Client()
     account = get_account(config.account_id)

@@ -14,7 +14,7 @@ def add_court_val(client, location, activity, date, start, end, keyword):
 def handler(event, context):
     print("receive event: " + str(event))
 
-    config = helper.read_from_json(event)
+    config = helper.read_json_event(event)
     account = helper.get_account(config.account_id)
 
     client.login(account.username, account.password)

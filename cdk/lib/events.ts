@@ -4,7 +4,7 @@ export const EVENTS = [
         "location": "queensbridge-sports-community-centre",
         "activity": "badminton-40min",
         "keyword": "Court 1,Court 3",
-        "day": 7,
+        "day_offset": 7,
         "slots": [
             {
                 "start_time": "11:00",
@@ -41,7 +41,7 @@ export const EVENTS = [
         "location": "queensbridge-sports-community-centre",
         "activity": "badminton-40min",
         "keyword": "Court 2,Court 4",
-        "day": 7,
+        "day_offset": 7,
         "slots": [
             {
                 "start_time": "11:00",
