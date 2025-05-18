@@ -1,0 +1,6 @@
+.vscode
+package
+build
+__pycache__
+.DS_Store
+.idea
