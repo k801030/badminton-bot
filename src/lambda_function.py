@@ -2,6 +2,7 @@ import multiprocessing
 
 import helper
 from client import Client
+from models.configuration import Configuration
 
 
 client = Client()
@@ -14,8 +15,8 @@ def add_court_val(client, location, activity, date, start, end, keyword):
 def handler(event, context):
     print("receive event: " + str(event))
 
-    config = helper.read_json_event(event)
-    account = helper.get_account(config.account_id)
+    config = Configuration.from_json(event)
+    account = helper.get_account_by_id(config.account_id)
 
     client.login(account.username, account.password)
 
@@ -47,5 +48,5 @@ def handler(event, context):
     if len(data["data"]["items"]) == 0:
         print("cart is empty, exit")
         return
-    ids = helper.get_ids_from_cart(client, data)
+    ids = helper.get_ids_from_cart(data)
     helper.reserve_the_items_in_cart(client, ids)

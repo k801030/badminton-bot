@@ -3,8 +3,9 @@ import sys
 from multiprocessing import Pool
 
 from client import Client
-from helper import now, multi_run_wrapper, print_cart, get_ids_from_cart, reserve_the_items_in_cart, \
-    read_json_event, get_account
+from datetime_utils import now
+from helper import multi_run_wrapper, print_cart, get_ids_from_cart, reserve_the_items_in_cart, get_account_by_id
+from models.configuration import Configuration
 
 
 sample_config = {
@@ -12,7 +13,7 @@ sample_config = {
     "location": "queensbridge-sports-community-centre",
     "activity": "badminton-40min",
     "keyword": "Court 1, Court 2",
-    "day": 3,
+    "day_offset": 3,
     "slots": [
         {
             "start_time": "16:00",
@@ -28,10 +29,10 @@ sample_config = {
 if __name__ == "__main__":
     print("started at " + now())
     manager = multiprocessing.Manager()
-    config = read_json_event(sample_config)
+    config = Configuration.from_json(sample_config)
 
     client = Client()
-    account = get_account(config.account_id)
+    account = get_account_by_id(config.account_id)
 
     try:
         client.login(account.username, account.password)
@@ -64,5 +65,5 @@ if __name__ == "__main__":
     print_cart(data)
     print("finished at " + now())
 
-    ids = get_ids_from_cart(client, data)
+    ids = get_ids_from_cart(data)
     reserve_the_items_in_cart(client, ids)

@@ -18,7 +18,7 @@ def multi_run_wrapper(args):
     return add_court(*args)
 
 
-def get_account(account_id) -> Account:
+def get_account_by_id(account_id) -> Account:
     region_name = "eu-west-2"
     secret_id = f"account/{account_id}"
 
@@ -42,38 +42,7 @@ def get_account(account_id) -> Account:
     return Account(json_str["username"], json_str["password"])
 
 
-def read_json_event(data):
-    """
-    Reads the json event and constructs a Configuration object.
-    """
-    slots = []
-    for slot in data["slots"]:
-        slots.append(Slot(slot["start_time"], slot["end_time"]))
-
-    config = Configuration(
-        data["accountId"],
-        data["location"],
-        data["activity"],
-        data["keyword"],
-        get_date(data["day_offset"]),
-        slots,
-    )
-    return config
-
-
-def get_date(day):
-    """
-    Gets the future date offset by a given number of days.
-    """
-    today = datetime.date.today()
-    return str(today + datetime.timedelta(days=day))
-
-
-def now():
-    return datetime.datetime.now().isoformat().split(".")[0]
-
-
-def get_ids_from_cart(client: Client, data):
+def get_ids_from_cart(data):
     """
     Extracts item IDs and descriptions from cart data.
     """
