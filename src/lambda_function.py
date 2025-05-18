@@ -2,7 +2,6 @@ import multiprocessing
 
 import helper
 from client import Client
-from helper import get_account
 
 
 client = Client()
@@ -16,7 +15,7 @@ def handler(event, context):
     print("receive event: " + str(event))
 
     config = helper.read_from_json(event)
-    account = get_account(config.account_id)
+    account = helper.get_account(config.account_id)
 
     client.login(account.username, account.password)
 
@@ -49,4 +48,4 @@ def handler(event, context):
         print("cart is empty, exit")
         return
     ids = helper.get_ids_from_cart(client, data)
-    helper.check_cart_then_add(client, ids)
+    helper.reserve_the_items_in_cart(client, ids)

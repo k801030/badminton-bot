@@ -4,7 +4,7 @@ import sys
 from multiprocessing import Pool
 
 from client import Client
-from helper import now, multi_run_wrapper, print_cart, get_ids_from_cart, check_cart_then_add, \
+from helper import now, multi_run_wrapper, print_cart, get_ids_from_cart, reserve_the_items_in_cart, \
     read_from_json, get_account
 
 
@@ -66,4 +66,4 @@ if __name__ == "__main__":
     print("finished at " + now())
 
     ids = get_ids_from_cart(client, data)
-    check_cart_then_add(client, ids)
+    reserve_the_items_in_cart(client, ids)

@@ -91,11 +91,19 @@ def get_ids_from_cart(client: Client, data):
     return dict
 
 
-def check_cart_then_add(client: Client, ids: dict):
+def reserve_the_items_in_cart(client: Client, ids: dict,
+                              reserve_duration_seconds: int = 600,
+                              check_period_seconds: int = 3):
     """
     Continuously checks the cart for missing items and re-adds them if needed.
     """
+    start_time = time.time()
     while True:
+        elapsed = time.time() - start_time
+        if elapsed > reserve_duration_seconds:
+            print(f"Reservation period of {reserve_duration_seconds} seconds has ended.")
+            return
+
         data = client.cart()
         items = data["data"]["items"]
         # items are missing
@@ -110,7 +118,7 @@ def check_cart_then_add(client: Client, ids: dict):
                 print("cannot add any items, exit")
                 return
 
-        time.sleep(3)
+        time.sleep(check_period_seconds)
 
 
 def add_missing_items(client: Client, ids: dict, items):
