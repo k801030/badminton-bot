@@ -3,28 +3,28 @@ from typing import List
 
 
 @dataclass
-class CartItem:
+class Cartable:
     id: str
     start_at: str
     end_at: str
-    location: str
+    name: str
 
     def __str__(self):
-        return f"{self.start_at} - {self.end_at} {self.location}"
+        return f"{self.start_at} - {self.end_at} {self.name}"
 
     @classmethod
-    def from_json(cls, data: dict) -> "CartItem":
+    def from_json(cls, data: dict) -> "Cartable":
         return cls(
             id=data["cartable_id"],
             start_at=data["cartable_resource"]["starts_at"]["format_24_hour"],
             end_at=data["cartable_resource"]["ends_at"]["format_24_hour"],
-            location=data["cartable_resource"]["location"]["name"],
+            name=data["cartable_resource"]["location"]["name"],
         )
 
 
 @dataclass
 class ShoppingCart:
-    items: List[CartItem]
+    items: List[Cartable]
 
     def __str__(self):
         output = "----------------\n"
@@ -38,5 +38,5 @@ class ShoppingCart:
     @classmethod
     def from_json(cls, data: dict) -> "ShoppingCart":
         items_data = data["data"]["items"]
-        items = [CartItem.from_json(item) for item in items_data]
+        items = [Cartable.from_json(item) for item in items_data]
         return cls(items=items)

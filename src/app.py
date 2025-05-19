@@ -50,10 +50,7 @@ def handle_request(request: CourtBookingRequest):
     book_court_in_parallel(request)
 
     data = client.cart()
-    shopping_cart = ShoppingCart.from_json(data)
-    print(shopping_cart)
+    cart = ShoppingCart.from_json(data)
 
-    if len(shopping_cart.items) != 0:
-        helper.reserve_the_items_in_cart(client, shopping_cart)
-
-    print("finished")
+    if cart.items:
+        helper.reserve_the_items_in_cart(client, cart)

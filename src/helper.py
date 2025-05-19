@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 from aws_session import session
 from client import Client
 from models.account import Account
+from models.courts import Courts
 from models.shopping_cart import ShoppingCart
 
 
@@ -34,16 +35,18 @@ def get_account_by_id(account_id) -> Account:
 
 
 def reserve_the_items_in_cart(client: Client, current_cart: ShoppingCart,
-                              reserve_duration_seconds: int = 600,
-                              check_period_seconds: int = 3):
+                              max_duration_seconds: int = 600,
+                              interval_seconds: int = 3):
     """
     Continuously checks the cart for missing items and re-adds them if needed.
     """
+    print(current_cart)
+
     start_time = time.time()
     while True:
         elapsed = time.time() - start_time
-        if elapsed > reserve_duration_seconds:
-            print(f"Reservation period of {reserve_duration_seconds} seconds has ended.")
+        if elapsed > max_duration_seconds:
+            print(f"Reservation period of {max_duration_seconds} seconds has ended.")
             return
 
         data = client.cart()
@@ -56,7 +59,7 @@ def reserve_the_items_in_cart(client: Client, current_cart: ShoppingCart,
             if not add_missing_items_to_cart(client, current_cart, updated_cart):
                 return
 
-        time.sleep(check_period_seconds)
+        time.sleep(interval_seconds)
 
 
 def add_missing_items_to_cart(client: Client, cart: ShoppingCart, updated_cart: ShoppingCart) -> bool:
@@ -77,34 +80,42 @@ def add_missing_items_to_cart(client: Client, cart: ShoppingCart, updated_cart: 
     return True
 
 
-def select_court(items, keyword) -> list[str]:
+def select_court(courts: Courts, keyword) -> list[str]:
     """
     Selects court item IDs that match given keyword(s) in their location name.
     """
     keywords = [k.strip() for k in keyword.split(",")]
     ids = []
     for k in keywords:
-        for item in items:
-            if k in item["location"]["name"]:
-                ids.append(item["id"])
+        for item in courts.items:
+            if k in item.name:
+                ids.append(item.id)
     return ids
 
 
-def book_court(client: Client, location, activity, date, start, end, keyword):
+def book_court(client: Client, location, activity, date, start, end, keyword, max_duration_seconds=120,
+               interval_seconds=1):
     """
     Tries to add a court booking for the specified time range and keyword.
     """
     slot_name = f"[ {start} - {end} ]"
+    data = client.get_courts_by_slot(location, activity, date, start, end)
+    courts = Courts.from_json(data)
 
-    courts = client.get_courts_by_slot(location, activity, date, start, end)
-
-    court_names = [court["location"]["name"] for court in courts["data"]]
+    court_names = [court.name for court in courts.items]
     print(f"The slot {slot_name} has available courts: {court_names}")
-    ids = select_court(courts["data"], keyword)
+    court_ids = select_court(courts, keyword)
+
+    start_time = time.time()
     while True:
-        for id in ids:
-            ok = client.add(id)
+        elapsed = time.time() - start_time
+        if elapsed > max_duration_seconds:
+            print(f"Reservation period of {max_duration_seconds} seconds has ended.")
+            return
+
+        for court_id in court_ids:
+            ok = client.add(court_id)
             if ok:
                 print(f"Succeeded to book the slot: {slot_name}")
                 return
-        time.sleep(1)
+        time.sleep(interval_seconds)
