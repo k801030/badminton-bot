@@ -1,7 +1,7 @@
 import pytest
 
+from app import client
 from helper import get_account_by_id
-from lambda_function import client
 
 
 @pytest.mark.parametrize("account_id", [1, 2])

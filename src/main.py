@@ -1,69 +1,27 @@
-import multiprocessing
-import sys
-from multiprocessing import Pool
-
-from client import Client
+from app import handle_request
 from datetime_utils import now
-from helper import multi_run_wrapper, print_cart, get_ids_from_cart, reserve_the_items_in_cart, get_account_by_id
-from models.configuration import Configuration
+from models.court_booking_request import CourtBookingRequest
 
 
-sample_config = {
+sample_request = {
     "accountId": "1",
     "location": "queensbridge-sports-community-centre",
     "activity": "badminton-40min",
     "keyword": "Court 1, Court 2",
-    "day_offset": 3,
+    "day_offset": 2,
     "slots": [
         {
             "start_time": "16:00",
             "end_time": "16:40"
         },
         {
-            "start_time": "18:00",
-            "end_time": "18:40"
+            "start_time": "18:40",
+            "end_time": "19:20"
         }
     ]
 }
 
 if __name__ == "__main__":
-    print("started at " + now())
-    manager = multiprocessing.Manager()
-    config = Configuration.from_json(sample_config)
-
-    client = Client()
-    account = get_account_by_id(config.account_id)
-
-    try:
-        client.login(account.username, account.password)
-    except:
-        print("invalid username/password")
-        sys.exit()
-
-    numOfThreads = len(config.slots)
-    args = []
-    for slot in config.slots:
-        args.append(
-            (
-                client,
-                config.location,
-                config.activity,
-                config.date,
-                slot.start_time,
-                slot.end_time,
-                config.keyword,
-            )
-        )
-    with Pool(numOfThreads) as pool:
-        results = pool.map(
-            multi_run_wrapper,
-            args,
-        )
-
-    print("Get results " + str(results))
-    data = client.cart()
-    print_cart(data)
-    print("finished at " + now())
-
-    ids = get_ids_from_cart(data)
-    reserve_the_items_in_cart(client, ids)
+    print(f"started at {now()}")
+    request = CourtBookingRequest.from_json(sample_request)
+    handle_request(request)

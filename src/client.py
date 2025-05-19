@@ -51,7 +51,7 @@ class Client:
             and "The date should be within the valid days" in data["message"]
         )
 
-    def add(self, id):
+    def add(self, id) -> bool:
         url = "{}/api/activities/cart/add".format(self.host)
         body = {"items": [{"id": id, "type": "activity"}]}
         r = http.request("POST", url, body=json.dumps(body), headers=self.default_header)

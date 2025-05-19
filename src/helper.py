@@ -1,21 +1,12 @@
-import datetime
 import json
 import time
 
 from botocore.exceptions import ClientError
 
-from client import Client
-from models.configuration import Configuration, Slot
-
-from models.account import Account
 from aws_session import session
-
-
-def multi_run_wrapper(args):
-    """
-    Wrapper function for multiprocessing.
-    """
-    return add_court(*args)
+from client import Client
+from models.account import Account
+from models.shopping_cart import ShoppingCart
 
 
 def get_account_by_id(account_id) -> Account:
@@ -42,24 +33,7 @@ def get_account_by_id(account_id) -> Account:
     return Account(json_str["username"], json_str["password"])
 
 
-def get_ids_from_cart(data):
-    """
-    Extracts item IDs and descriptions from cart data.
-    """
-    dict = {}
-    items = data["data"]["items"]
-    for item in items:
-        id = item["cartable_id"]
-        value = "{} - {} {}".format(
-            item["cartable_resource"]["starts_at"]["format_24_hour"],
-            item["cartable_resource"]["ends_at"]["format_24_hour"],
-            item["cartable_resource"]["location"]["name"],
-        )
-        dict[id] = value
-    return dict
-
-
-def reserve_the_items_in_cart(client: Client, ids: dict,
+def reserve_the_items_in_cart(client: Client, current_cart: ShoppingCart,
                               reserve_duration_seconds: int = 600,
                               check_period_seconds: int = 3):
     """
@@ -73,54 +47,34 @@ def reserve_the_items_in_cart(client: Client, ids: dict,
             return
 
         data = client.cart()
-        items = data["data"]["items"]
+        updated_cart = ShoppingCart.from_json(data)
+
         # items are missing
-        if len(ids) != len(items):
-            warn = "[WARN] items are missing, original={}, current={}".format(
-                len(ids), len(items)
-            )
+        if len(current_cart.items) != len(updated_cart.items):
+            warn = f"[WARN] cart items are missing, original={len(current_cart.items)}, current={len(updated_cart.items)}"
             print(warn)
-            add_missing_items(client, ids, items)
-            data = client.cart()
-            if len(data["data"]["items"]) == 0:
-                print("cannot add any items, exit")
+            if not add_missing_items_to_cart(client, current_cart, updated_cart):
                 return
 
         time.sleep(check_period_seconds)
 
 
-def add_missing_items(client: Client, ids: dict, items):
+def add_missing_items_to_cart(client: Client, cart: ShoppingCart, updated_cart: ShoppingCart) -> bool:
     """
     Identifies and re-adds missing items to the cart.
     """
-    item_ids = set()
-    for item in items:
-        item_ids.add(item["cartable_id"])
 
-    for id in ids:
-        if id not in item_ids:
-            print("item is missing: {}".format(ids[id]))
-            client.add(id)
+    updated_ids = {item.id for item in updated_cart.items}
+    for item in cart.items:
+        if item.id not in updated_ids:
+            client.add(item.id)
 
-
-def print_cart(data):
-    """
-    Prints the shopping cart contents in a readable format.
-    """
-    output = "[Shopping Cart]\n"
-    items = data["data"]["items"]
-    for item in items:
-        output += "{} - {} {}\n".format(
-            item["cartable_resource"]["starts_at"]["format_24_hour"],
-            item["cartable_resource"]["ends_at"]["format_24_hour"],
-            item["cartable_resource"]["location"]["name"],
-        )
-    if len(items) == 0:
-        output += "(empty)\n"
-
-    print("----------------")
-    print(output)
-    print("----------------")
+    data = client.cart()
+    updated_cart = ShoppingCart.from_json(data)
+    if not updated_cart.items:
+        print("unable to add items to cart")
+        return False
+    return True
 
 
 def select_court(items, keyword) -> list[str]:
@@ -136,20 +90,21 @@ def select_court(items, keyword) -> list[str]:
     return ids
 
 
-def add_court(client: Client, location, activity, date, start, end, keyword):
+def book_court(client: Client, location, activity, date, start, end, keyword):
     """
     Tries to add a court booking for the specified time range and keyword.
     """
-    title = "[ " + start + " - " + end + " ]"
+    slot_name = f"[ {start} - {end} ]"
 
-    print(f"{title} get_courts_by_slot...")
     courts = client.get_courts_by_slot(location, activity, date, start, end)
-    print(f"{title} get_courts_by_slot result: {courts}")
+
+    court_names = [court["location"]["name"] for court in courts["data"]]
+    print(f"The slot {slot_name} has available courts: {court_names}")
     ids = select_court(courts["data"], keyword)
     while True:
         for id in ids:
             ok = client.add(id)
-            if ok == True:
-                print(f"add item successfully: {title}")
-                return "SCCUESS"
+            if ok:
+                print(f"Succeeded to book the slot: {slot_name}")
+                return
         time.sleep(1)
