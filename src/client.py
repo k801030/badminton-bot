@@ -8,6 +8,14 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(cert_reqs='CERT_NONE', assert_hostname=False)
 
 
+def not_ready_for_reservation(r):
+    data = json.loads(r.data.decode('utf-8'))
+    return (
+        r.status == 422
+        and "The date should be within the valid days" in data["message"]
+    )
+
+
 class Client:
     host = ""
     default_header = ""
@@ -39,17 +47,10 @@ class Client:
         )
         while True:
             r = http.request("GET", url, headers=self.default_header)
-            if self._not_ready(r):
+            if not_ready_for_reservation(r):
                 time.sleep(SLEEP_INTERVAL)
                 continue
             return json.loads(r.data.decode('utf-8'))
-
-    def _not_ready(self, r):
-        data = json.loads(r.data.decode('utf-8'))
-        return (
-            r.status == 422
-            and "The date should be within the valid days" in data["message"]
-        )
 
     def add(self, id) -> bool:
         url = "{}/api/activities/cart/add".format(self.host)

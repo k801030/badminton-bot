@@ -35,8 +35,8 @@ def get_account_by_id(account_id) -> Account:
 
 
 def reserve_the_items_in_cart(client: Client, current_cart: ShoppingCart,
-                              max_duration_seconds: int = 600,
-                              interval_seconds: int = 3):
+                              max_duration_seconds: int = 300,
+                              interval_seconds: int = 5):
     """
     Continuously checks the cart for missing items and re-adds them if needed.
     """
@@ -93,7 +93,7 @@ def select_court(courts: Courts, keyword) -> list[str]:
     return ids
 
 
-def book_court(client: Client, location, activity, date, start, end, keyword, max_duration_seconds=120,
+def book_court(client: Client, location, activity, date, start, end, keyword, max_duration_seconds=300,
                interval_seconds=1):
     """
     Tries to add a court booking for the specified time range and keyword.
@@ -103,6 +103,10 @@ def book_court(client: Client, location, activity, date, start, end, keyword, ma
     courts = Courts.from_json(data)
 
     court_names = [court.name for court in courts.items]
+    if not court_names:
+        print(f"The slot {slot_name} doesn't have available courts")
+        return
+
     print(f"The slot {slot_name} has available courts: {court_names}")
     court_ids = select_court(courts, keyword)
 
