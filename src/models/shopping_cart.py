@@ -39,4 +39,5 @@ class ShoppingCart:
     def from_json(cls, data: dict) -> "ShoppingCart":
         items_data = data["data"]["items"]
         items = [Cartable.from_json(item) for item in items_data]
+        items = sorted(items, key=lambda x: x.name)
         return cls(items=items)

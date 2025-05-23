@@ -1,6 +1,7 @@
 import multiprocessing
 
 import helper
+import line_client
 from client import Client
 from models.court_booking_request import CourtBookingRequest, Slot
 from models.shopping_cart import ShoppingCart
@@ -53,4 +54,5 @@ def handle_request(request: CourtBookingRequest):
     cart = ShoppingCart.from_json(data)
 
     if cart.items:
+        line_client.send_flex_message(cart.items)
         helper.reserve_the_items_in_cart(client, cart)

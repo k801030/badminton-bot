@@ -1,4 +1,5 @@
 import json
+import os
 import time
 
 from botocore.exceptions import ClientError
@@ -7,18 +8,35 @@ from aws_session import session
 from client import Client
 from models.account import Account
 from models.courts import Courts
+from models.line_secret import LineSecret
 from models.shopping_cart import ShoppingCart
 
 
-def get_account_by_id(account_id) -> Account:
-    region_name = "eu-west-2"
-    secret_id = f"account/{account_id}"
+# Create a Secrets Manager client
+region = os.environ.get('AWS_REGION')
 
-    # Create a Secrets Manager client
-    client = session.client(
-        service_name='secretsmanager',
-        region_name=region_name
-    )
+client = session.client(
+    service_name='secretsmanager',
+    region_name=region
+)
+
+
+def get_line_secret() -> LineSecret:
+    try:
+        get_secret_value_response = client.get_secret_value(
+            SecretId="line_secret"
+        )
+    except ClientError as e:
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    secret = get_secret_value_response['SecretString']
+    json_str = json.loads(secret)
+    return LineSecret(json_str["access_token"], json_str["group_id"])
+
+def get_account_by_id(account_id) -> Account:
+    secret_id = f"account/{account_id}"
 
     try:
         get_secret_value_response = client.get_secret_value(

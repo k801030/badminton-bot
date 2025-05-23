@@ -8,8 +8,16 @@ sample_request = {
     "location": "queensbridge-sports-community-centre",
     "activity": "badminton-40min",
     "keyword": "Court 1, Court 2",
-    "day_offset": 2,
+    "day_offset": 1,
     "slots": [
+        {
+            "start_time": "09:00",
+            "end_time": "09:40"
+        },
+        {
+            "start_time": "09:40",
+            "end_time": "10:20"
+        },
         {
             "start_time": "16:00",
             "end_time": "16:40"
