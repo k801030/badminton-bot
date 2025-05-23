@@ -38,12 +38,13 @@ export class LambdaEventBridge extends cdk.Stack {
 
         // EventBridge Rule
         const rule = new events.Rule(this, 'EventRule', {
-            ruleName: "10pmEveryFriAndSat",
+            ruleName: "badminton scheduled reservation",
+            description: "10pm every Fri or Sat",
             schedule: events.Schedule.cron({
                 minute: "59",
                 hour: "20,21",
                 month: "*",
-                weekDay: "FRI,SAT",
+                weekDay: "FRI",
                 year: "*",
             }),
         });
