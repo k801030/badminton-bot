@@ -52,7 +52,7 @@ def handle_request(request: CourtBookingRequest):
 
     data = client.cart()
     cart = ShoppingCart.from_json(data)
+    line_client.send_flex_message(cart.items)
 
     if cart.items:
-        line_client.send_flex_message(cart.items)
         helper.reserve_the_items_in_cart(client, cart)
