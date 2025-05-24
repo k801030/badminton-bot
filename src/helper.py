@@ -111,7 +111,7 @@ def select_court(courts: Courts, keyword) -> list[str]:
     return ids
 
 
-def book_court(client: Client, location, activity, date, start, end, keyword, max_duration_seconds=300,
+def book_court(client: Client, location, activity, date, start, end, keyword, max_duration_seconds=120,
                interval_seconds=1):
     """
     Tries to add a court booking for the specified time range and keyword.
