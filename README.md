@@ -11,6 +11,36 @@ The application is used to book the badminton court
 4. Send the notification to LINE group 
 5. Monitor the cart after adding items — if any items are removed by the admin, attempt to re-add them automatically.
 
+### Booking Flow Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant Scheduler
+    participant App
+    participant Secrets as Secrets Manager
+    participant Court as Court API
+    participant LINE as LINE API
+
+    Scheduler->>App: Trigger court booking request
+
+    App->>Secrets: Get court account credentials
+    Secrets-->>App: Return court account
+
+    App->>Secrets: Get LINE secret
+    Secrets-->>App: Return LINE secret
+
+    App->>Court: Login with credentials
+    App->>Court: Book courts
+    App->>Court: Check cart
+    Court-->>App: Return cart data
+
+    App->>LINE: Send notification (message, group_id)
+
+    alt Cart contains items
+        App->>Court: Reserve items in cart
+    end
+
+```
+
 ## Architecture
 
 ![image](diagram.png)
