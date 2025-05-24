@@ -6,7 +6,7 @@ Automates badminton court booking via third-party APIs and LINE notifications.
 
 ## How it Works
 
-1. Use the third-party API to log in, and explicitly set the User-Agent header to help prevent the website from
+1. Use the court API to log in, and explicitly set the User-Agent header to help prevent the website from
    detecting the script as a bot.
 2. Fetch available slots and attempt to reserve them by adding to the cart.
 3. Continuously retry the reservation process to secure the slots as early as possible.
@@ -21,7 +21,7 @@ Automates badminton court booking via third-party APIs and LINE notifications.
 sequenceDiagram
     participant Scheduler
     participant App
-    participant Secrets as Secrets Manager
+    participant Secrets as Secrets Service
     participant Court as Court API
     participant LINE as LINE API
 
