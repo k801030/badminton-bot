@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List
 
 
-
 @dataclass
 class Reservable:
     id: str
@@ -21,6 +20,7 @@ class Reservable:
             end_at=data["ends_at"]["format_24_hour"],
             name=data["location"]["name"],
         )
+
 
 @dataclass
 class Courts:

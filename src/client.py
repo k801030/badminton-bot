@@ -5,11 +5,11 @@ import urllib3
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-http = urllib3.PoolManager(cert_reqs='CERT_NONE', assert_hostname=False)
+http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
 
 
 def not_ready_for_reservation(r):
-    data = json.loads(r.data.decode('utf-8'))
+    data = json.loads(r.data.decode("utf-8"))
     return (
         r.status == 422
         and "The date should be within the valid days" in data["message"]
@@ -34,8 +34,10 @@ class Client:
         url = "{}/api/auth/customer/login".format(self.host)
         body = {"username": username, "password": password}
 
-        r = http.request("POST", url, body=json.dumps(body), headers=self.default_header)
-        data = json.loads(r.data.decode('utf-8'))
+        r = http.request(
+            "POST", url, body=json.dumps(body), headers=self.default_header
+        )
+        data = json.loads(r.data.decode("utf-8"))
         if data["status"] != "success":
             raise Exception("invalid username/password")
         self.default_header["Authorization"] = "Bearer {}".format(data["token"])
@@ -50,12 +52,14 @@ class Client:
             if not_ready_for_reservation(r):
                 time.sleep(SLEEP_INTERVAL)
                 continue
-            return json.loads(r.data.decode('utf-8'))
+            return json.loads(r.data.decode("utf-8"))
 
     def add(self, id) -> bool:
         url = "{}/api/activities/cart/add".format(self.host)
         body = {"items": [{"id": id, "type": "activity"}]}
-        r = http.request("POST", url, body=json.dumps(body), headers=self.default_header)
+        r = http.request(
+            "POST", url, body=json.dumps(body), headers=self.default_header
+        )
         if r.status == 200:
             return True
         return False
@@ -63,7 +67,7 @@ class Client:
     def cart(self):
         url = "{}/api/activities/cart".format(self.host)
         r = http.request("GET", url, headers=self.default_header)
-        data = json.loads(r.data.decode('utf-8'))
+        data = json.loads(r.data.decode("utf-8"))
         if r.status == 200:
             return data
         elif r.status == 409:

@@ -21,7 +21,7 @@ def generate_messages(items: list[Cartable], date: str) -> json:
                             "text": item.get_time(),
                             "size": "md",
                             "color": "#555555",
-                            "flex": 0
+                            "flex": 0,
                         },
                         {
                             "type": "text",
@@ -29,8 +29,8 @@ def generate_messages(items: list[Cartable], date: str) -> json:
                             "size": "md",
                             "color": "#999999",
                             "align": "end",
-                            "wrap": True
-                        }
+                            "wrap": True,
+                        },
                     ],
                     "margin": "10px",
                 }
@@ -48,7 +48,7 @@ def generate_messages(items: list[Cartable], date: str) -> json:
                     "contents": formatted_contents,
                 },
             ],
-            "paddingTop": "10px"
+            "paddingTop": "10px",
         }
     else:
         title = FAILURE_TITLE
@@ -56,7 +56,7 @@ def generate_messages(items: list[Cartable], date: str) -> json:
             "type": "box",
             "layout": "vertical",
             "contents": [],
-            "paddingTop": "10px"
+            "paddingTop": "10px",
         }
 
     return {
@@ -68,13 +68,30 @@ def generate_messages(items: list[Cartable], date: str) -> json:
                 "type": "box",
                 "layout": "vertical",
                 "contents": [
-                    {"type": "text", "text": "通知", "color": "#06C755", "weight": "bold", "size": "md",
-                     "margin": "sm"},
-                    {"type": "text", "text": f"{title}", "weight": "bold", "size": "xl", "margin": "md"},
-                    {"type": "text", "text": f"{date}", "color": "#999999", "margin": "md"},
+                    {
+                        "type": "text",
+                        "text": "通知",
+                        "color": "#06C755",
+                        "weight": "bold",
+                        "size": "md",
+                        "margin": "sm",
+                    },
+                    {
+                        "type": "text",
+                        "text": f"{title}",
+                        "weight": "bold",
+                        "size": "xl",
+                        "margin": "md",
+                    },
+                    {
+                        "type": "text",
+                        "text": f"{date}",
+                        "color": "#999999",
+                        "margin": "md",
+                    },
                 ],
                 "paddingBottom": "0px",
             },
             "body": body,
-        }
+        },
     }

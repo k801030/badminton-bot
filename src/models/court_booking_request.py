@@ -20,7 +20,7 @@ class CourtBookingRequest:
     slots: List[Slot]
 
     @classmethod
-    def from_json(cls, data: dict) -> 'CourtBookingRequest':
+    def from_json(cls, data: dict) -> "CourtBookingRequest":
         slots = [Slot(slot["start_time"], slot["end_time"]) for slot in data["slots"]]
         return cls(
             account_id=data["accountId"],
@@ -28,5 +28,5 @@ class CourtBookingRequest:
             activity=data["activity"],
             keyword=data["keyword"],
             date=get_date(data["day_offset"]),
-            slots=slots
+            slots=slots,
         )

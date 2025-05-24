@@ -13,14 +13,15 @@ client = Client()
 
 def book_court(request: CourtBookingRequest, slot: Slot):
     print("run")
-    return helper.book_court(client=client,
-                             location=request.location,
-                             activity=request.activity,
-                             date=request.date,
-                             start=slot.start_time,
-                             end=slot.end_time,
-                             keyword=request.keyword,
-                             )
+    return helper.book_court(
+        client=client,
+        location=request.location,
+        activity=request.activity,
+        date=request.date,
+        start=slot.start_time,
+        end=slot.end_time,
+        keyword=request.keyword,
+    )
 
 
 def book_court_in_parallel(request: CourtBookingRequest):
