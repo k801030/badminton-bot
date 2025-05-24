@@ -34,7 +34,7 @@ jobs:
           pip install boto3 black pytest
 
       - name: Run code formatter
-        run: black src tests
+        run: black --check src tests
 
       - name: Run integration tests
         run: |
