@@ -11,6 +11,7 @@ jobs:
 
     env:
       AWS_REGION: 'eu-west-2'
+      PYTHONPATH: ./app
 
     steps:
       - name: Checkout code
@@ -37,14 +38,10 @@ jobs:
         run: black --check app tests
 
       - name: Run unit tests
-        run: |
-          export PYTHONPATH=$PYTHONPATH:./app
-          pytest tests/ --ignore=tests/integration
+        run: pytest tests/ --ignore=tests/integration
 
       - name: Run integration tests
-        run: |
-          export PYTHONPATH=$PYTHONPATH:./app
-          pytest tests/integration
+        run: pytest tests/integration
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
