@@ -1,4 +1,5 @@
 import json
+import threading
 
 import urllib3
 
@@ -11,7 +12,7 @@ class LineClient:
     def __init__(self, access_token):
         self.access_token = access_token
 
-    def send_flex_messages(self, messages: json, group_id: str):
+    def _send_request(self, messages: json, group_id: str):
 
         url = "https://api.line.me/v2/bot/message/push"
         headers = {
@@ -20,6 +21,15 @@ class LineClient:
         }
         body = {"to": group_id, "messages": [messages]}
 
-        r = http.request("POST", url, body=json.dumps(body), headers=headers)
-        if r.status != 200:
-            print(f"failed to send message to LINE: {r.data.decode('utf-8')}")
+        try:
+            r = http.request("POST", url, body=json.dumps(body), headers=headers)
+            if r.status != 200:
+                print(f"failed to send LINE message: {r.data.decode('utf-8')}")
+        except Exception as e:
+            print(f"failed to send LINE message: {e}")
+
+    def send_flex_messages(self, messages: json, group_id: str):
+        # fire and forget
+        threading.Thread(
+            target=self._send_request, args=(messages, group_id), daemon=True
+        ).start()
