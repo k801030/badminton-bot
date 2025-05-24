@@ -31,7 +31,7 @@ export class LambdaEventBridge extends cdk.Stack {
             functionName: 'BadmintonBot',
             runtime: lambda.Runtime.PYTHON_3_10,
             handler: 'lambda_function.handler',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../../src')),
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../app')),
             role: lambdaRole,
             timeout: Duration.minutes(15),
         });
