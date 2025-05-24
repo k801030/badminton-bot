@@ -21,6 +21,12 @@ class Cartable:
             name=data["cartable_resource"]["location"]["name"],
         )
 
+    def get_time(self):
+        return f"{self.start_at} - {self.end_at}"
+
+    def get_location(self):
+        return self.name.split(",")[0].strip()
+
 
 @dataclass
 class ShoppingCart:
