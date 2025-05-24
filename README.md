@@ -8,11 +8,12 @@ The application is used to book the badminton court
    detecting the script as a bot.
 2. Fetch available slots and attempt to reserve them by adding to the cart.
 3. Continuously retry the reservation process to secure the slots as early as possible.
-4. Monitor the cart after adding items — if any items are removed by the admin, attempt to re-add them automatically.
+4. Send the notification to LINE group 
+5. Monitor the cart after adding items — if any items are removed by the admin, attempt to re-add them automatically.
 
 ## Architecture
 
-![image](aws.png)
+![image](diagram.png)
 
 ### EventBridge
 
