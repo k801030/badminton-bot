@@ -42,3 +42,8 @@ Sample event:
 
 ### Secret Manager
 Store the account details (username, password), and allow the lambda function to fetch them by account ID 
+
+## UI - LINE Flex Message 
+Integrated LINE API to send the flex message to target group
+
+<img src="./flex-message-ui.png" width=240 alt="">
