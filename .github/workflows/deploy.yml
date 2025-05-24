@@ -36,6 +36,9 @@ jobs:
       - name: Run code formatter
         run: black --check app tests
 
+      - name: Run unit tests
+        run: pytest tests/ --ignore=tests/integration
+
       - name: Run integration tests
         run: |
           export PYTHONPATH=$PYTHONPATH:./app

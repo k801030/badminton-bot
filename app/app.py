@@ -1,20 +1,27 @@
 import multiprocessing
+import os
 
 import helper
-import line_client
 import line_flex_factory
-from client import Client
+from http_client import CourtClient
+from line_client import LineClient
 from models.court_booking_request import CourtBookingRequest, Slot
 from models.shopping_cart import ShoppingCart
+from secret_manager import SecretManager
 
 
-client = Client()
+region = os.environ.get("AWS_REGION")
+is_dev = os.environ.get("ENV", "").lower() == "dev"
+sm = SecretManager(region=region, is_dev=is_dev)
+line_secret = sm.get_line_secret()
+
+court_client = CourtClient()
+line_client = LineClient(access_token=line_secret.access_token)
 
 
 def book_court(request: CourtBookingRequest, slot: Slot):
-    print("run")
     return helper.book_court(
-        client=client,
+        client=court_client,
         location=request.location,
         activity=request.activity,
         date=request.date,
@@ -30,7 +37,7 @@ def book_court_in_parallel(request: CourtBookingRequest):
         p = multiprocessing.Process(
             target=helper.book_court,
             args=(
-                client,
+                court_client,
                 request.location,
                 request.activity,
                 request.date,
@@ -47,16 +54,16 @@ def book_court_in_parallel(request: CourtBookingRequest):
 
 
 def handle_request(request: CourtBookingRequest):
-    account = helper.get_account_by_id(request.account_id)
-    client.login(account.username, account.password)
+    account = sm.get_account_by_id(request.account_id)
+    court_client.login(account.username, account.password)
 
     book_court_in_parallel(request)
 
-    data = client.cart()
+    data = court_client.cart()
     cart = ShoppingCart.from_json(data)
 
     messages = line_flex_factory.generate_messages(items=cart.items, date=request.date)
-    line_client.send_flex_messages(messages)
+    line_client.send_flex_messages(messages=messages, group_id=line_secret.group_id)
 
     if cart.items:
-        helper.reserve_the_items_in_cart(client, cart)
+        helper.reserve_the_items_in_cart(court_client, cart)

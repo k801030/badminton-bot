@@ -16,7 +16,7 @@ def not_ready_for_reservation(r):
     )
 
 
-class Client:
+class CourtClient:
     host = ""
     default_header = ""
 

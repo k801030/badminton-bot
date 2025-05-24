@@ -1,53 +1,12 @@
-import json
-import os
 import time
 
-from botocore.exceptions import ClientError
-
-from aws_session import session
-from client import Client
-from models.account import Account
+from http_client import CourtClient
 from models.courts import Courts
-from models.line_secret import LineSecret
 from models.shopping_cart import ShoppingCart
 
 
-# Create a Secrets Manager client
-region = os.environ.get("AWS_REGION")
-
-client = session.client(service_name="secretsmanager", region_name=region)
-
-
-def get_line_secret() -> LineSecret:
-    try:
-        get_secret_value_response = client.get_secret_value(SecretId="line_secret")
-    except ClientError as e:
-        # For a list of exceptions thrown, see
-        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        raise e
-
-    secret = get_secret_value_response["SecretString"]
-    json_str = json.loads(secret)
-    return LineSecret(json_str["access_token"], json_str["group_id"])
-
-
-def get_account_by_id(account_id) -> Account:
-    secret_id = f"account/{account_id}"
-
-    try:
-        get_secret_value_response = client.get_secret_value(SecretId=secret_id)
-    except ClientError as e:
-        # For a list of exceptions thrown, see
-        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
-        raise e
-
-    secret = get_secret_value_response["SecretString"]
-    json_str = json.loads(secret)
-    return Account(json_str["username"], json_str["password"])
-
-
 def reserve_the_items_in_cart(
-    client: Client,
+    client: CourtClient,
     current_cart: ShoppingCart,
     max_duration_seconds: int = 300,
     interval_seconds: int = 5,
@@ -78,7 +37,7 @@ def reserve_the_items_in_cart(
 
 
 def add_missing_items_to_cart(
-    client: Client, cart: ShoppingCart, updated_cart: ShoppingCart
+    client: CourtClient, cart: ShoppingCart, updated_cart: ShoppingCart
 ) -> bool:
     """
     Identifies and re-adds missing items to the cart.
@@ -111,7 +70,7 @@ def select_court(courts: Courts, keyword) -> list[str]:
 
 
 def book_court(
-    client: Client,
+    client: CourtClient,
     location,
     activity,
     date,
