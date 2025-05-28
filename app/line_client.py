@@ -28,8 +28,7 @@ class LineClient:
         except Exception as e:
             print(f"failed to send LINE message: {e}")
 
-    def send_flex_messages(self, messages: json, group_id: str):
-        # fire and forget
+    def send_notification_async(self, messages: json, group_id: str):
         threading.Thread(
-            target=self._send_request, args=(messages, group_id), daemon=True
+            target=self._send_request, args=(messages, group_id), daemon=False
         ).start()

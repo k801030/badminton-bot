@@ -63,7 +63,9 @@ def handle_request(request: CourtBookingRequest):
     cart = ShoppingCart.from_json(data)
 
     messages = line_flex_factory.generate_messages(items=cart.items, date=request.date)
-    line_client.send_flex_messages(messages=messages, group_id=line_secret.group_id)
+    line_client.send_notification_async(
+        messages=messages, group_id=line_secret.group_id
+    )
 
     if cart.items:
         helper.reserve_the_items_in_cart(court_client, cart)
