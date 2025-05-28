@@ -62,7 +62,9 @@ def handle_request(request: CourtBookingRequest):
     data = court_client.cart()
     cart = ShoppingCart.from_json(data)
 
-    messages = line_flex_factory.generate_messages(items=cart.items, date=request.date)
+    messages = line_flex_factory.generate_messages(
+        items=cart.items, date=request.date, username=account.username
+    )
     line_client.send_notification_async(
         messages=messages, group_id=line_secret.group_id
     )
