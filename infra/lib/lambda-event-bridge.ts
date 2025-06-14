@@ -44,7 +44,7 @@ export class LambdaEventBridge extends cdk.Stack {
                 minute: "59",
                 hour: "20,21",
                 month: "*",
-                weekDay: "FRI",
+                weekDay: "FRI,SAT",
                 year: "*",
             }),
         });
