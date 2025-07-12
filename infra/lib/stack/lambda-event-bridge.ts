@@ -21,7 +21,7 @@ export class LambdaEventBridge extends cdk.Stack {
 
         lambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-        // Add Secrets Manager read permission
+        // Grant Lambda permission to read from Secrets Manager
         lambdaRole.addToPolicy(new PolicyStatement({
             actions: ['secretsmanager:GetSecretValue'],
             resources: ['*'],
@@ -37,7 +37,7 @@ export class LambdaEventBridge extends cdk.Stack {
             timeout: Duration.minutes(15),
         });
 
-        // EventBridge Rule
+        // Create EventBridge rules for each weekday defined in WeekdayEventRules
         const rules = []
         for (const [weekday, enabled] of WeekdayEventRules) {
             rules.push(
@@ -50,10 +50,10 @@ export class LambdaEventBridge extends cdk.Stack {
             )
         }
 
-        // Load JSON
+        // Attach the Lambda function as a target to each EventBridge rule
+        // Pass the event data as the input payload to the Lambda function
         for (const event of Events) {
             for (const rule of rules) {
-                // Add Lambda as target
                 rule.addTarget(new targets.LambdaFunction(handler, {
                     event: events.RuleTargetInput.fromObject(event)
                 }));
@@ -61,10 +61,11 @@ export class LambdaEventBridge extends cdk.Stack {
         }
     }
 
+    // Helper method to generate cron schedules for EventBridge rules based on weekday
     private scheduleByWeekday(weekday: string): events.Schedule {
         return events.Schedule.cron({
             minute: "59",
-            hour: "20,21",
+            hour: "20,21", // 20:59 and 21:59 UK time
             month: "*",
             weekDay: weekday,
             year: "*",
