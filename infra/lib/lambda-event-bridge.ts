@@ -5,8 +5,9 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as path from 'path';
-import {EVENTS} from "./events";
 import {ManagedPolicy, PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam";
+import { WeekdayEventRules } from './weekday-event-rules';
+import { Events } from './events';
 
 export class LambdaEventBridge extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -37,25 +38,36 @@ export class LambdaEventBridge extends cdk.Stack {
         });
 
         // EventBridge Rule
-        const rule = new events.Rule(this, 'EventRule', {
-            ruleName: "badminton-reservation",
-            description: "10pm every Fri or Sat",
-            schedule: events.Schedule.cron({
-                minute: "59",
-                hour: "20,21",
-                month: "*",
-                weekDay: "FRI,SAT",
-                year: "*",
-            }),
-        });
-
+        const rules = []
+        for (const [weekday, enabled] of WeekdayEventRules) {
+            rules.push(
+                new events.Rule(this, `EventRule-${weekday}`, {
+                    ruleName: `badminton-reservation-${weekday.toLowerCase()}`,
+                    description: `execute at 10pm UK timezone`,
+                    schedule: this.scheduleByWeekday(weekday),
+                    enabled: enabled,
+                })
+            )
+        }
 
         // Load JSON
-        for (const event of EVENTS) {
-            // Add Lambda as target
-            rule.addTarget(new targets.LambdaFunction(handler, {
-                event: events.RuleTargetInput.fromObject(event)
-            }));
+        for (const event of Events) {
+            for (const rule of rules) {
+                // Add Lambda as target
+                rule.addTarget(new targets.LambdaFunction(handler, {
+                    event: events.RuleTargetInput.fromObject(event)
+                }));
+            }
         }
+    }
+
+    private scheduleByWeekday(weekday: string): events.Schedule {
+        return events.Schedule.cron({
+            minute: "59",
+            hour: "20,21",
+            month: "*",
+            weekDay: weekday,
+            year: "*",
+        })
     }
 }

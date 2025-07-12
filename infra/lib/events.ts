@@ -1,4 +1,4 @@
-export const EVENTS = [
+export const Events = [
     {
         "accountId": "1",
         "location": "queensbridge-sports-community-centre",
