@@ -8,7 +8,7 @@ from models.shopping_cart import ShoppingCart
 def reserve_the_items_in_cart(
     client: CourtClient,
     current_cart: ShoppingCart,
-    max_duration_seconds: int = 300,
+    max_duration_seconds: int = 600,
     interval_seconds: int = 5,
 ):
     """
