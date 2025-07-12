@@ -13,6 +13,7 @@ def reserve_the_items_in_cart(
 ):
     """
     Continuously checks the cart for missing items and re-adds them if needed.
+    Because the server might drop the bookings
     """
     print(current_cart)
 

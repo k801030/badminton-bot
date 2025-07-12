@@ -12,13 +12,18 @@ from secret_manager import SecretManager
 
 region = os.environ.get("AWS_REGION")
 is_dev = os.environ.get("ENV", "").lower() == "dev"
+
+# Initialize SecretManager to fetch secrets based on environment
 sm = SecretManager(region=region, is_dev=is_dev)
+# Retrieve Line messaging API secrets
 line_secret = sm.get_line_secret()
 
+# Initialize HTTP clients for court booking and Line messaging
 court_client = CourtClient()
 line_client = LineClient(access_token=line_secret.access_token)
 
 
+# Book a single court slot using helper function
 def book_court(request: CourtBookingRequest, slot: Slot):
     return helper.book_court(
         client=court_client,
@@ -31,6 +36,7 @@ def book_court(request: CourtBookingRequest, slot: Slot):
     )
 
 
+# Book multiple court slots in parallel using multiprocessing
 def book_court_in_parallel(request: CourtBookingRequest):
     processes = []
     for slot in request.slots:
@@ -53,21 +59,31 @@ def book_court_in_parallel(request: CourtBookingRequest):
         p.join()
 
 
+# Main handler to process booking request
 def handle_request(request: CourtBookingRequest):
+    # Retrieve account credentials from Secret Manager
     account = sm.get_account_by_id(request.account_id)
+
+    # Login to court booking system
     court_client.login(account.username, account.password)
 
+    # Book all requested slots in parallel
     book_court_in_parallel(request)
 
+    # Retrieve current shopping cart data after booking
     data = court_client.cart()
     cart = ShoppingCart.from_json(data)
 
+    # Generate Line messaging notification content
     messages = line_flex_factory.generate_messages(
         items=cart.items, date=request.date, username=account.username
     )
+
+    # Send async notification to Line group
     line_client.send_notification_async(
         messages=messages, group_id=line_secret.group_id
     )
 
+    # If there are items in the cart, reserve them for a period
     if cart.items:
         helper.reserve_the_items_in_cart(court_client, cart)
