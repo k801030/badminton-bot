@@ -6,8 +6,8 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as path from 'path';
 import {ManagedPolicy, PolicyStatement, Role, ServicePrincipal} from "aws-cdk-lib/aws-iam";
-import { WeekdayEventRules } from './weekday-event-rules';
-import { Events } from './events';
+import { WeekdayEventRules } from '../config/weekday-event-rules';
+import { Events } from '../data/events';
 
 export class LambdaEventBridge extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -32,7 +32,7 @@ export class LambdaEventBridge extends cdk.Stack {
             functionName: 'BadmintonBot',
             runtime: lambda.Runtime.PYTHON_3_10,
             handler: 'lambda_function.handler',
-            code: lambda.Code.fromAsset(path.join(__dirname, '../../app')),
+            code: lambda.Code.fromAsset(path.join(__dirname, '../../../app')),
             role: lambdaRole,
             timeout: Duration.minutes(15),
         });
