@@ -9,7 +9,6 @@ from models.court_booking_request import CourtBookingRequest, Slot
 from models.shopping_cart import ShoppingCart
 from secret_manager import SecretManager
 
-
 region = os.environ.get("AWS_REGION")
 is_dev = os.environ.get("ENV", "").lower() == "dev"
 
@@ -66,13 +65,15 @@ def book_court_in_parallel(request: CourtBookingRequest):
 # Main handler to process booking request
 def handle_request(request: CourtBookingRequest):
     print(f"[DEBUG] Starting handle_request with account_id: {request.account_id}")
-    
+
     # Retrieve account credentials from Secret Manager
     try:
         account = sm.get_account_by_id(request.account_id)
         print(f"[DEBUG] Retrieved credentials for account: {account.username}")
     except Exception as e:
-        print(f"[ERROR] Failed to retrieve credentials for account_id {request.account_id}: {e}")
+        print(
+            f"[ERROR] Failed to retrieve credentials for account_id {request.account_id}: {e}"
+        )
         raise
 
     # Login to court booking system

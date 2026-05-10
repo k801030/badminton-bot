@@ -3,7 +3,6 @@ import threading
 
 import urllib3
 
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
 
@@ -26,7 +25,10 @@ class LineClient:
             if r.status == 200:
                 print("Successfully sent LINE message.", flush=True)
             else:
-                print(f"Failed to send LINE message: status={r.status}, response={r.data.decode('utf-8')}", flush=True)
+                print(
+                    f"Failed to send LINE message: status={r.status}, response={r.data.decode('utf-8')}",
+                    flush=True,
+                )
         except Exception as e:
             print(f"Failed to send LINE message error: {e}", flush=True)
 

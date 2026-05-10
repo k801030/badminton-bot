@@ -14,10 +14,7 @@ class SecretManager:
         self.is_dev = is_dev
 
     def _get_secret(self, secret_name):
-        response = self.client.get_parameter(
-            Name=secret_name,
-            WithDecryption=True
-        )
+        response = self.client.get_parameter(Name=secret_name, WithDecryption=True)
         return response["Parameter"]["Value"]
 
     def get_line_secret(self) -> LineSecret:

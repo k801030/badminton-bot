@@ -2,7 +2,6 @@ import json
 
 from models.shopping_cart import Cartable
 
-
 SUCCESS_TITLE = "場地已加入購物車 🛒"
 FAILURE_TITLE = "❌ 訂場失敗 😭😭😭"
 

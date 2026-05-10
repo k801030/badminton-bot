@@ -2,7 +2,6 @@ from app import handle_request
 from datetime_utils import now
 from models.court_booking_request import CourtBookingRequest
 
-
 sample_request = {
     "accountId": "1",
     "location": "queensbridge-sports-community-centre",

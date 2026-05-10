@@ -3,7 +3,6 @@ import time
 
 import urllib3
 
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(maxsize=10, cert_reqs="CERT_NONE", assert_hostname=False)
 

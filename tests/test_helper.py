@@ -1,7 +1,6 @@
 import helper
 from models.courts import Courts, Reservable
 
-
 courts = Courts(
     [
         Reservable(id="1", name="London Court", start_at="16:00", end_at="17:00"),
