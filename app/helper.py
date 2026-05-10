@@ -24,10 +24,8 @@ def reserve_the_items_in_cart(
             print(f"Reservation period of {max_duration_seconds} seconds has ended.")
             return
 
-        print(f"[DEBUG] Polling cart data...")
         data = client.cart()
         updated_cart = ShoppingCart.from_json(data)
-        print(f"[DEBUG] Polled cart. Found {len(updated_cart.items)} items.")
 
         # items are missing
         if len(current_cart.items) != len(updated_cart.items):
