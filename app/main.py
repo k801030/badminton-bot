@@ -7,17 +7,24 @@ from datetime_utils import now
 from models.court_booking_request import CourtBookingRequest
 
 sample_request = {
-    "accountId": "1",
-    "location": "queensbridge-sports-community-centre",
-    "activity": "badminton-40min",
-    "keyword": "Court 1, Court 2",
-    "day_offset": 1,
-    "slots": [
-        {"start_time": "09:00", "end_time": "09:40"},
-        {"start_time": "09:40", "end_time": "10:20"},
-        {"start_time": "16:00", "end_time": "16:40"},
-        {"start_time": "18:40", "end_time": "19:20"},
-    ],
+  "accountId": "1",
+  "location": "queensbridge-sports-community-centre",
+  "activity": "badminton-40min",
+  "keyword": "Court 1,Court 3",
+  "day_offset": 7,
+  "slots": [{
+    "start_time": "19:20",
+    "end_time": "20:00"
+  }, {
+    "start_time": "20:00",
+    "end_time": "20:40"
+  }, {
+    "start_time": "20:40",
+    "end_time": "21:20"
+  }, {
+    "start_time": "21:20",
+    "end_time": "22:00"
+  }]
 }
 
 if __name__ == "__main__":
