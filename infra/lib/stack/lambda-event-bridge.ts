@@ -30,7 +30,7 @@ export class LambdaEventBridge extends cdk.Stack {
         // Lambda Function
         const handler = new lambda.Function(this, 'LambdaHandler', {
             functionName: 'BadmintonBot',
-            runtime: lambda.Runtime.PYTHON_3_11,
+            runtime: lambda.Runtime.custom('python3.14'),
             handler: 'lambda_function.handler',
             code: lambda.Code.fromAsset(path.join(__dirname, '../../../app')),
             role: lambdaRole,
