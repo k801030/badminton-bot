@@ -1,4 +1,4 @@
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 import os
 
 import helper
@@ -36,13 +36,12 @@ def book_court(request: CourtBookingRequest, slot: Slot):
     )
 
 
-# Book multiple court slots in parallel using multiprocessing
+# Book multiple court slots in parallel using ThreadPoolExecutor
 def book_court_in_parallel(request: CourtBookingRequest):
-    processes = []
-    for slot in request.slots:
-        p = multiprocessing.Process(
-            target=helper.book_court,
-            args=(
+    with ThreadPoolExecutor(max_workers=len(request.slots)) as executor:
+        futures = [
+            executor.submit(
+                helper.book_court,
                 court_client,
                 request.location,
                 request.activity,
@@ -50,13 +49,11 @@ def book_court_in_parallel(request: CourtBookingRequest):
                 slot.start_time,
                 slot.end_time,
                 request.keyword,
-            ),
-        )
-        processes.append(p)
-        p.start()
-
-    for p in processes:
-        p.join()
+            )
+            for slot in request.slots
+        ]
+        for f in futures:
+            f.result()
 
 
 # Main handler to process booking request
