@@ -21,16 +21,16 @@ export class LambdaEventBridge extends cdk.Stack {
 
         lambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-        // Grant Lambda permission to read from SSM Parameter Store
+        // Grant Lambda permission to read from Secrets Manager
         lambdaRole.addToPolicy(new PolicyStatement({
-            actions: ['ssm:GetParameter'],
+            actions: ['secretsmanager:GetSecretValue'],
             resources: ['*'],
         }));
 
         // Lambda Function
         const handler = new lambda.Function(this, 'LambdaHandler', {
             functionName: 'BadmintonBot',
-            runtime: lambda.Runtime.PYTHON_3_10,
+            runtime: lambda.Runtime.PYTHON_3_11,
             handler: 'lambda_function.handler',
             code: lambda.Code.fromAsset(path.join(__dirname, '../../../app')),
             role: lambdaRole,
