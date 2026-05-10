@@ -18,7 +18,7 @@ class SecretManager:
         return response["Parameter"]["Value"]
 
     def get_line_secret(self) -> LineSecret:
-        secret_name = "line_secret/dev" if self.is_dev else "line_secret"
+        secret_name = "line_secret_dev" if self.is_dev else "line_secret"
         secret = self._get_secret(secret_name)
         json_str = json.loads(secret)
         return LineSecret(json_str["access_token"], json_str["group_id"])
