@@ -15,7 +15,7 @@ run: setup
 	$(PYTHON) app/main.py
 
 test: setup
-	$(PYTHON) -m pytest tests
+	PYTHONPATH=app $(PYTHON) -m pytest tests
 
 clean:
 	rm -rf $(VENV)

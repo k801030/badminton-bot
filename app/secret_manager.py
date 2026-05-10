@@ -25,6 +25,6 @@ class SecretManager:
 
     def get_account_by_id(self, account_id) -> Account:
 
-        secret = self._get_secret(f"account/{account_id}")
+        secret = self._get_secret(f"account_{account_id}")
         json_str = json.loads(secret)
         return Account(json_str["username"], json_str["password"])
