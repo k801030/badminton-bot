@@ -21,17 +21,17 @@ Automates badminton court booking via third-party APIs and LINE notifications.
 sequenceDiagram
     participant Scheduler
     participant App
-    participant Secrets as Secrets Service
+    participant SSM as SSM Parameter Store
     participant Court as Court API
     participant LINE as LINE API
 
     Scheduler->>App: Trigger court booking request
 
-    App->>Secrets: Get court account credentials
-    Secrets-->>App: Return court account
+    App->>SSM: Get court account credentials
+    SSM-->>App: Return court account
 
-    App->>Secrets: Get LINE secret
-    Secrets-->>App: Return LINE secret
+    App->>SSM: Get LINE secret
+    SSM-->>App: Return LINE secret
 
     App->>Court: Login with credentials
     App->>Court: Book courts
@@ -82,9 +82,31 @@ Sample event:
 
 ---
 
-### Secret Manager
+### SSM Parameter Store
 
-Store the account details (username, password), and allow the lambda function to fetch them by account ID
+Store the account details (username, password) and LINE secrets as SecureStrings in AWS Systems Manager Parameter Store to save costs. The lambda function fetches them by path (e.g., `account_1`, `line_secret`).
+
+---
+
+## Local Development & Testing
+
+You can run the application locally to test the booking flow with a sample request.
+
+### Setup
+```bash
+make setup
+```
+
+### Run Local Test
+By default, running the app locally uses the `dev` environment (loads `line_secret_dev`).
+```bash
+make run-dev
+```
+
+### Run Tests
+```bash
+make test
+```
 
 ---
 
