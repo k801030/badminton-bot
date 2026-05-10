@@ -15,7 +15,7 @@ def reserve_the_items_in_cart(
     Continuously checks the cart for missing items and re-adds them if needed.
     Because the server might drop the bookings
     """
-    print(current_cart)
+    print(f"[DEBUG] Starting reservation loop for cart: {current_cart}")
 
     start_time = time.time()
     while True:
@@ -24,8 +24,10 @@ def reserve_the_items_in_cart(
             print(f"Reservation period of {max_duration_seconds} seconds has ended.")
             return
 
+        print(f"[DEBUG] Polling cart data...")
         data = client.cart()
         updated_cart = ShoppingCart.from_json(data)
+        print(f"[DEBUG] Polled cart. Found {len(updated_cart.items)} items.")
 
         # items are missing
         if len(current_cart.items) != len(updated_cart.items):
@@ -47,8 +49,11 @@ def add_missing_items_to_cart(
     updated_ids = {item.id for item in updated_cart.items}
     for item in cart.items:
         if item.id not in updated_ids:
-            client.add(item.id)
+            print(f"[DEBUG] Item {item.id} is missing. Attempting to re-add.")
+            ok = client.add(item.id)
+            print(f"[DEBUG] Re-add item {item.id} result: {ok}")
 
+    print(f"[DEBUG] Refreshing cart after re-adding missing items.")
     data = client.cart()
     updated_cart = ShoppingCart.from_json(data)
     if not updated_cart.items:
@@ -85,8 +90,10 @@ def book_court(
     Tries to add a court booking for the specified time range and keyword.
     """
     slot_name = f"[ {start} - {end} ]"
+    print(f"[DEBUG] [{slot_name}] Fetching courts for {location}, {activity}, {date}")
     data = client.get_courts_by_slot(location, activity, date, start, end)
     courts = Courts.from_json(data)
+    print(f"[DEBUG] [{slot_name}] Found {len(courts.items)} courts available.")
 
     court_names = [court.name for court in courts.items]
     if not court_names:
@@ -104,7 +111,9 @@ def book_court(
             return
 
         for court_id in court_ids:
+            print(f"[DEBUG] [{slot_name}] Attempting to add court {court_id} to cart.")
             ok = client.add(court_id)
+            print(f"[DEBUG] [{slot_name}] Add court {court_id} result: {ok}")
             if ok:
                 print(f"Succeeded to book the slot: {slot_name}")
                 return
