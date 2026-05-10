@@ -21,9 +21,9 @@ export class LambdaEventBridge extends cdk.Stack {
 
         lambdaRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-        // Grant Lambda permission to read from Secrets Manager
+        // Grant Lambda permission to read from SSM Parameter Store
         lambdaRole.addToPolicy(new PolicyStatement({
-            actions: ['secretsmanager:GetSecretValue'],
+            actions: ['ssm:GetParameter'],
             resources: ['*'],
         }));
 
