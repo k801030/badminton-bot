@@ -100,6 +100,9 @@ def book_court(
 
     print(f"The slot {slot_name} has available courts: {court_names}")
     court_ids = select_court(courts, keyword)
+    if not court_ids:
+        print(f"[DEBUG] [{slot_name}] No courts matched the keywords: {keyword}")
+        return
 
     start_time = time.time()
     while True:
