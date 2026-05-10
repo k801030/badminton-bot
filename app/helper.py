@@ -111,9 +111,7 @@ def book_court(
             return
 
         for court_id in court_ids:
-            print(f"[DEBUG] [{slot_name}] Attempting to add court {court_id} to cart.")
             ok = client.add(court_id)
-            print(f"[DEBUG] [{slot_name}] Add court {court_id} result: {ok}")
             if ok:
                 print(f"Succeeded to book the slot: {slot_name}")
                 return
