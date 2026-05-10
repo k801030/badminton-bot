@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("ENV", "dev")
+
 from app import handle_request
 from datetime_utils import now
 from models.court_booking_request import CourtBookingRequest

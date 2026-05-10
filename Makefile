@@ -14,6 +14,9 @@ $(VENV)/bin/activate: requirements.txt
 run: setup
 	$(PYTHON) app/main.py
 
+run-dev: setup
+	ENV=dev $(PYTHON) app/main.py
+
 test: setup
 	PYTHONPATH=app $(PYTHON) -m pytest tests
 
