@@ -55,12 +55,16 @@ class CourtClient:
 
     def add(self, id) -> bool:
         url = "{}/api/activities/cart/add".format(self.host)
-        body = {"items": [{"id": id, "type": "activity"}]}
+        body = {"items": [{"id": id, "type": "purchasableOccurrence"}]}
         r = http.request(
             "POST", url, body=json.dumps(body), headers=self.default_header
         )
         if r.status == 200:
             return True
+        print(
+            f"[DEBUG] Failed to add item {id} to cart: status={r.status}, response={r.data.decode('utf-8')}",
+            flush=True,
+        )
         return False
 
     def cart(self):
