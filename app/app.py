@@ -116,10 +116,10 @@ def handle_request(request: CourtBookingRequest):
         print(f"[ERROR] Failed to generate Line messages: {e}")
         raise
 
-    # Send async notification to Line group
+    # Send notification to Line group
     try:
         print(f"[DEBUG] Sending notification to Line group {line_secret.group_id}")
-        line_client.send_notification_async(
+        line_client.send_notification(
             messages=messages, group_id=line_secret.group_id
         )
         print(f"[DEBUG] Notification trigger sent.")
