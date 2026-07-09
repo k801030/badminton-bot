@@ -43,7 +43,7 @@ class CourtClient:
 
     def get_courts_by_slot(self, location, activity, date, start_time, end_time):
         SLEEP_INTERVAL = 1
-        url = "{}/api/activities/venue/{}/activity/{}/slots?date={}&start_time={}&end_time={}".format(
+        url = "{}/api/activities/venue/{}/activity/{}/v2/slots?date={}&start_time={}&end_time={}".format(
             self.host, location, activity, date, start_time, end_time
         )
         while True:
