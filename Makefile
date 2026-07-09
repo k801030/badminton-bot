@@ -1,8 +1,9 @@
 VENV = .venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
+BLACK = $(VENV)/bin/black
 
-.PHONY: setup run test clean
+.PHONY: setup run test clean format lint
 
 setup: $(VENV)/bin/activate
 
@@ -19,6 +20,12 @@ run-dev: setup
 
 test: setup
 	PYTHONPATH=app $(PYTHON) -m pytest tests
+
+format: setup
+	$(BLACK) app tests
+
+lint: setup
+	$(BLACK) --check app tests
 
 clean:
 	rm -rf $(VENV)

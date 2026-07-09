@@ -119,9 +119,7 @@ def handle_request(request: CourtBookingRequest):
     # Send notification to Line group
     try:
         print(f"[DEBUG] Sending notification to Line group {line_secret.group_id}")
-        line_client.send_notification(
-            messages=messages, group_id=line_secret.group_id
-        )
+        line_client.send_notification(messages=messages, group_id=line_secret.group_id)
         print(f"[DEBUG] Notification trigger sent.")
     except Exception as e:
         print(f"[ERROR] Failed to send Line notification: {e}")
