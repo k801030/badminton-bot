@@ -42,7 +42,7 @@ class CourtClient:
         self.default_header["Authorization"] = "Bearer {}".format(data["token"])
 
     def get_courts_by_slot(
-        self, location, activity, date, start_time, end_time, max_duration_seconds=120
+        self, location, activity, date, start_time, end_time, max_duration_seconds=15
     ):
         SLEEP_INTERVAL = 1
         url = "{}/api/activities/venue/{}/activity/{}/v2/slots?date={}&start_time={}&end_time={}".format(

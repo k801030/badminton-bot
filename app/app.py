@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 
+from datetime_utils import wait_until_next_hour
 import helper
 import line_flex_factory
 from http_client import CourtClient
@@ -84,6 +85,9 @@ def handle_request(request: CourtBookingRequest):
     except Exception as e:
         print(f"[ERROR] Login failed for user {account.username}: {e}")
         raise
+
+    # Wait until the top of the hour (:00:00) if triggered at minute 59
+    wait_until_next_hour()
 
     # Book all requested slots in parallel
     try:

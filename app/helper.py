@@ -81,7 +81,7 @@ def book_court(
     start,
     end,
     keyword,
-    max_duration_seconds=120,
+    max_duration_seconds=15,
     interval_seconds=1,
 ):
     """
@@ -128,4 +128,3 @@ def book_court(
             if ok:
                 print(f"Succeeded to book the slot: {slot_name}")
                 return
-        time.sleep(interval_seconds)
