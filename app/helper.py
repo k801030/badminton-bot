@@ -88,23 +88,35 @@ def book_court(
     Tries to add a court booking for the specified time range and keyword.
     """
     slot_name = f"[ {start} - {end} ]"
-    print(f"[DEBUG] [{slot_name}] Fetching courts for {location}, {activity}, {date}")
-    data = client.get_courts_by_slot(location, activity, date, start, end)
-    courts = Courts.from_json(data)
-    print(f"[DEBUG] [{slot_name}] Found {len(courts.items)} courts available.")
+    start_time = time.time()
+
+    courts = None
+    while True:
+        print(
+            f"[DEBUG] [{slot_name}] Fetching courts for {location}, {activity}, {date}"
+        )
+        data = client.get_courts_by_slot(location, activity, date, start, end)
+        courts = Courts.from_json(data)
+        print(f"[DEBUG] [{slot_name}] Found {len(courts.items)} courts available.")
+
+        if courts.items:
+            break
+
+        elapsed = time.time() - start_time
+        if elapsed > max_duration_seconds:
+            print(f"The slot {slot_name} doesn't have available courts")
+            return
+
+        print(f"The slot {slot_name} doesn't have available courts yet, retrying...")
+        time.sleep(interval_seconds)
 
     court_names = [court.name for court in courts.items]
-    if not court_names:
-        print(f"The slot {slot_name} doesn't have available courts")
-        return
-
     print(f"The slot {slot_name} has available courts: {court_names}")
     court_ids = select_court(courts, keyword)
     if not court_ids:
         print(f"[DEBUG] [{slot_name}] No courts matched the keywords: {keyword}")
         return
 
-    start_time = time.time()
     while True:
         elapsed = time.time() - start_time
         if elapsed > max_duration_seconds:

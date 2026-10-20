@@ -41,16 +41,26 @@ class CourtClient:
             raise Exception("invalid username/password")
         self.default_header["Authorization"] = "Bearer {}".format(data["token"])
 
-    def get_courts_by_slot(self, location, activity, date, start_time, end_time):
+    def get_courts_by_slot(
+        self, location, activity, date, start_time, end_time, max_duration_seconds=120
+    ):
         SLEEP_INTERVAL = 1
         url = "{}/api/activities/venue/{}/activity/{}/v2/slots?date={}&start_time={}&end_time={}".format(
             self.host, location, activity, date, start_time, end_time
         )
+        started_at = time.time()
         while True:
             r = http.request("GET", url, headers=self.default_header)
             if not_ready_for_reservation(r):
+                print(f"[DEBUG] Response from {url}: {r.data.decode('utf-8')}")
+                if time.time() - started_at > max_duration_seconds:
+                    print(
+                        f"Reservation period of {max_duration_seconds} seconds has ended."
+                    )
+                    return {"data": []}
                 time.sleep(SLEEP_INTERVAL)
                 continue
+
             return json.loads(r.data.decode("utf-8"))
 
     def add(self, id) -> bool:
