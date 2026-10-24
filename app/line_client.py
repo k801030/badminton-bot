@@ -14,7 +14,7 @@ class LineClient:
     def __init__(self, access_token):
         self.access_token = access_token
 
-    def _send_request(self, messages: json, group_id: str):
+    def _send_request(self, messages: dict, group_id: str):
         url = "https://api.line.me/v2/bot/message/push"
         headers = {
             "Content-Type": "application/json",
@@ -35,14 +35,14 @@ class LineClient:
         except Exception:
             logger.exception("Failed to send LINE message")
 
-    def send_notification(self, messages: json, group_id: str):
+    def send_notification(self, messages: dict, group_id: str):
         """
         Sends the message synchronously (blocks until the request is done).
         """
         self._send_request(messages, group_id)
 
     def send_notification_async(
-        self, messages: json, group_id: str
+        self, messages: dict, group_id: str
     ) -> threading.Thread:
         """
         Sends the message in a background thread and returns the thread.

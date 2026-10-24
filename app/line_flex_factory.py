@@ -1,5 +1,3 @@
-import json
-
 from models.booking_result import BookingResult
 from models.shopping_cart import Cartable
 
@@ -7,7 +5,7 @@ SUCCESS_TITLE = "場地已加入購物車 🛒"
 FAILURE_TITLE = "❌ 訂場失敗 😭😭😭"
 
 
-def generate_header(title: str, date: str) -> json:
+def generate_header(title: str, date: str) -> dict:
     return {
         "type": "box",
         "layout": "vertical",
@@ -38,7 +36,7 @@ def generate_header(title: str, date: str) -> json:
     }
 
 
-def generate_body(items: list[Cartable]) -> json:
+def generate_body(items: list[Cartable]) -> dict:
     formatted_contents = []
     for index, item in enumerate(items):
         formatted_contents.append(
@@ -72,7 +70,7 @@ def generate_body(items: list[Cartable]) -> json:
     }
 
 
-def generate_footer(username: str) -> json:
+def generate_footer(username: str) -> dict:
     return {
         "type": "box",
         "layout": "horizontal",
@@ -97,7 +95,7 @@ def generate_footer(username: str) -> json:
     }
 
 
-def generate_slot_results(results: list[BookingResult]) -> json:
+def generate_slot_results(results: list[BookingResult]) -> dict:
     """
     One row per requested slot: time | status.
     """
@@ -149,7 +147,7 @@ def generate_messages(
     date: str,
     username: str,
     results: list[BookingResult] | None = None,
-) -> json:
+) -> dict:
     contents = [{"type": "separator", "margin": "md"}]
     if items:
         title = SUCCESS_TITLE
@@ -185,7 +183,7 @@ ERROR_TITLE = "⚠️ 訂場程式執行失敗"
 MAX_ERROR_LENGTH = 200
 
 
-def generate_error_message(date: str, account_id: str, error: Exception) -> json:
+def generate_error_message(date: str, account_id: str, error: Exception) -> dict:
     """
     Plain text message sent when the booking flow crashes before the
     normal result notification could be sent (e.g. login failure).
