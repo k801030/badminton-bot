@@ -1,7 +1,7 @@
 export const Events = [
     {
         "accountId": "1",
-        "location": "queensbridge-sports-community-centre",
+        "location": "britannia-leisure-centre",
         "activity": "badminton-40min",
         "keyword": "Court 1,Court 3",
         "day_offset": 7,
@@ -26,7 +26,7 @@ export const Events = [
     },
     {
         "accountId": "2",
-        "location": "queensbridge-sports-community-centre",
+        "location": "britannia-leisure-centre",
         "activity": "badminton-40min",
         "keyword": "Court 2,Court 4",
         "day_offset": 7,
