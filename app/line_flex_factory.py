@@ -1,5 +1,6 @@
 import json
 
+from models.booking_result import BookingResult, BookingStatus
 from models.shopping_cart import Cartable
 
 SUCCESS_TITLE = "場地已加入購物車 🛒"
@@ -96,31 +97,82 @@ def generate_footer(username: str) -> json:
     }
 
 
-def generate_messages(items: list[Cartable], date: str, username: str) -> json:
+def generate_slot_results(results: list[BookingResult]) -> json:
+    """
+    One row per requested slot: time | status.
+    """
+    rows = []
+    for r in results:
+        rows.append(
+            {
+                "type": "box",
+                "layout": "horizontal",
+                "contents": [
+                    {
+                        "type": "text",
+                        "text": r.slot_name,
+                        "size": "sm",
+                        "color": "#555555",
+                        "flex": 0,
+                    },
+                    {
+                        "type": "text",
+                        "text": r.label,
+                        "size": "sm",
+                        "color": (
+                            "#6B9E78"
+                            if r.status == BookingStatus.SUCCESS
+                            else "#C0716B"
+                        ),
+                        "align": "end",
+                        "wrap": True,
+                    },
+                ],
+                "margin": "10px",
+            }
+        )
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+            {
+                "type": "text",
+                "text": "各時段結果",
+                "size": "sm",
+                "weight": "bold",
+                "color": "#555555",
+                "margin": "md",
+            },
+            *rows,
+        ],
+    }
+
+
+def generate_messages(
+    items: list[Cartable],
+    date: str,
+    username: str,
+    results: list[BookingResult] | None = None,
+) -> json:
+    contents = [{"type": "separator", "margin": "md"}]
     if items:
         title = SUCCESS_TITLE
-        body = {
-            "type": "box",
-            "layout": "vertical",
-            "contents": [
-                {"type": "separator", "margin": "md"},
-                generate_body(items),
-                {"type": "separator", "margin": "md"},
-                generate_footer(username),
-            ],
-            "paddingTop": "10px",
-        }
+        contents += [generate_body(items), {"type": "separator", "margin": "md"}]
     else:
         title = FAILURE_TITLE
-        body = {
-            "type": "box",
-            "layout": "vertical",
-            "contents": [
-                {"type": "separator", "margin": "md"},
-                generate_footer(username),
-            ],
-            "paddingTop": "10px",
-        }
+    if results:
+        contents += [
+            generate_slot_results(results),
+            {"type": "separator", "margin": "md"},
+        ]
+    contents.append(generate_footer(username))
+
+    body = {
+        "type": "box",
+        "layout": "vertical",
+        "contents": contents,
+        "paddingTop": "10px",
+    }
 
     return {
         "type": "flex",

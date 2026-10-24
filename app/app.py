@@ -6,6 +6,7 @@ import helper
 import line_flex_factory
 from http_client import CourtClient
 from line_client import LineClient
+from models.booking_result import BookingResult, BookingStatus
 from models.court_booking_request import CourtBookingRequest, Slot
 from models.shopping_cart import ShoppingCart
 from secret_manager import SecretManager
@@ -37,8 +38,10 @@ def book_court(request: CourtBookingRequest, slot: Slot):
 
 
 # Book multiple court slots in parallel using ThreadPoolExecutor
-def book_court_in_parallel(request: CourtBookingRequest):
+def book_court_in_parallel(request: CourtBookingRequest) -> list[BookingResult]:
     print(f"[DEBUG] book_court_in_parallel started with {len(request.slots)} slots.")
+    results: list[BookingResult] = []
+    # the `with` block waits (shutdown(wait=True)) for every slot thread to finish
     with ThreadPoolExecutor(max_workers=len(request.slots)) as executor:
         futures = [
             executor.submit(
@@ -54,13 +57,19 @@ def book_court_in_parallel(request: CourtBookingRequest):
             for slot in request.slots
         ]
         print(f"[DEBUG] Submitted all tasks to ThreadPoolExecutor.")
-        for i, f in enumerate(futures):
+        for i, (slot, f) in enumerate(zip(request.slots, futures)):
             try:
-                f.result()
+                results.append(f.result())
                 print(f"[DEBUG] Slot {i+1} booking task finished successfully.")
             except Exception as e:
+                # keep going so the other slots are still reported to LINE
                 print(f"[ERROR] Slot {i+1} booking task failed: {e}")
-                raise
+                results.append(
+                    BookingResult(
+                        slot.start_time, slot.end_time, BookingStatus.ERROR, str(e)
+                    )
+                )
+    return results
 
 
 # Main handler to process booking request
@@ -92,8 +101,10 @@ def handle_request(request: CourtBookingRequest):
     # Book all requested slots in parallel
     try:
         print(f"[DEBUG] Starting parallel booking for slots.")
-        book_court_in_parallel(request)
+        results = book_court_in_parallel(request)
         print(f"[DEBUG] Parallel booking completed.")
+        for r in results:
+            print(f"[DEBUG] Slot result: {r}")
     except Exception as e:
         print(f"[ERROR] Error during parallel booking: {e}")
         raise
@@ -113,7 +124,10 @@ def handle_request(request: CourtBookingRequest):
     try:
         print(f"[DEBUG] Generating Line messages.")
         messages = line_flex_factory.generate_messages(
-            items=cart.items, date=request.date, username=account.username
+            items=cart.items,
+            date=request.date,
+            username=account.username,
+            results=results,
         )
         print(f"[DEBUG] Generated messages content: {messages}")
     except Exception as e:
