@@ -13,7 +13,7 @@ import line_flex_factory
 from http_client import CourtClient
 from line_client import LineClient
 from models.booking_result import BookingResult, BookingStatus
-from models.court_booking_request import CourtBookingRequest, Slot
+from models.court_booking_request import CourtBookingRequest
 from models.shopping_cart import ShoppingCart
 from secret_manager import SecretManager
 
@@ -30,19 +30,6 @@ line_secret = sm.get_line_secret()
 # Initialize HTTP clients for court booking and Line messaging
 court_client = CourtClient()
 line_client = LineClient(access_token=line_secret.access_token)
-
-
-# Book a single court slot using helper function
-def book_court(request: CourtBookingRequest, slot: Slot):
-    return helper.book_court(
-        client=court_client,
-        location=request.location,
-        activity=request.activity,
-        date=request.date,
-        start=slot.start_time,
-        end=slot.end_time,
-        keyword=request.keyword,
-    )
 
 
 # Book multiple court slots in parallel using ThreadPoolExecutor
