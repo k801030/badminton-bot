@@ -7,18 +7,6 @@ export const Events = [
         "day_offset": 7,
         "slots": [
             {
-                "start_time": "11:00",
-                "end_time": "11:40"
-            },
-            {
-                "start_time": "11:40",
-                "end_time": "12:20"
-            },
-            {
-                "start_time": "12:20",
-                "end_time": "13:00"
-            },
-            {
                 "start_time": "19:20",
                 "end_time": "20:00"
             },
@@ -43,18 +31,6 @@ export const Events = [
         "keyword": "Court 2,Court 4",
         "day_offset": 7,
         "slots": [
-            {
-                "start_time": "11:00",
-                "end_time": "11:40"
-            },
-            {
-                "start_time": "11:40",
-                "end_time": "12:20"
-            },
-            {
-                "start_time": "12:20",
-                "end_time": "13:00"
-            },
             {
                 "start_time": "19:20",
                 "end_time": "20:00"
