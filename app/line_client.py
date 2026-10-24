@@ -32,7 +32,16 @@ class LineClient:
         except Exception as e:
             print(f"Failed to send LINE message error: {e}", flush=True)
 
-    def send_notification_async(self, messages: json, group_id: str):
-        threading.Thread(
+    def send_notification_async(
+        self, messages: json, group_id: str
+    ) -> threading.Thread:
+        """
+        Sends the message in a background thread and returns the thread.
+        Callers MUST join() it before the Lambda handler returns, otherwise the
+        execution environment may be frozen before the request is sent.
+        """
+        thread = threading.Thread(
             target=self._send_request, args=(messages, group_id), daemon=False
-        ).start()
+        )
+        thread.start()
+        return thread

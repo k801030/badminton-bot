@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
+import threading
 
 from datetime_utils import wait_until_next_hour
 import helper
@@ -72,6 +73,17 @@ def book_court_in_parallel(request: CourtBookingRequest) -> list[BookingResult]:
     return results
 
 
+# Wait for the LINE notification thread so Lambda doesn't freeze before it's sent
+def wait_for_notification(thread: threading.Thread | None, timeout: float = 10):
+    if thread is None:
+        return
+    thread.join(timeout=timeout)
+    if thread.is_alive():
+        print(f"[WARN] LINE notification still running after {timeout}s.")
+    else:
+        print(f"[DEBUG] LINE notification thread finished.")
+
+
 # Main handler to process booking request
 def handle_request(request: CourtBookingRequest):
     print(f"[DEBUG] Starting handle_request with account_id: {request.account_id}")
@@ -135,9 +147,10 @@ def handle_request(request: CourtBookingRequest):
         raise
 
     # Send async notification to Line group
+    notify_thread = None
     try:
         print(f"[DEBUG] Sending notification to Line group {line_secret.group_id}")
-        line_client.send_notification_async(
+        notify_thread = line_client.send_notification_async(
             messages=messages, group_id=line_secret.group_id
         )
         print(f"[DEBUG] Notification trigger sent.")
@@ -145,14 +158,18 @@ def handle_request(request: CourtBookingRequest):
         print(f"[ERROR] Failed to send Line notification: {e}")
         raise
 
-    # If there are items in the cart, reserve them for a period
-    if cart.items:
-        print(f"[DEBUG] Cart has items, starting reservation.")
-        try:
-            helper.reserve_the_items_in_cart(court_client, cart)
-            print(f"[DEBUG] Reservation completed.")
-        except Exception as e:
-            print(f"[ERROR] Error during item reservation: {e}")
-            raise
-    else:
-        print(f"[DEBUG] No items in cart to reserve.")
+    try:
+        # If there are items in the cart, reserve them for a period
+        if cart.items:
+            print(f"[DEBUG] Cart has items, starting reservation.")
+            try:
+                helper.reserve_the_items_in_cart(court_client, cart)
+                print(f"[DEBUG] Reservation completed.")
+            except Exception as e:
+                print(f"[ERROR] Error during item reservation: {e}")
+                raise
+        else:
+            print(f"[DEBUG] No items in cart to reserve.")
+    finally:
+        # Always wait for the notification before the handler returns
+        wait_for_notification(notify_thread)
