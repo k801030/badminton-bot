@@ -11,10 +11,9 @@ sample_request = {
     "location": "britannia-leisure-centre",
     "activity": "badminton-40min",
     "keyword": ["Court 1", "Court 2", "Court 3", "Court 4"],
-    "day_offset": 7,
+    "day_offset": 5,
     "slots": [
         {"start_time": "07:01", "end_time": "07:02"},
-        {"start_time": "19:20", "end_time": "20:00"},
         {"start_time": "19:20", "end_time": "20:00"},
         {"start_time": "20:00", "end_time": "20:40"},
         {"start_time": "20:40", "end_time": "21:20"},
