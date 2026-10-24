@@ -32,6 +32,12 @@ class LineClient:
         except Exception as e:
             print(f"Failed to send LINE message error: {e}", flush=True)
 
+    def send_notification(self, messages: json, group_id: str):
+        """
+        Sends the message synchronously (blocks until the request is done).
+        """
+        self._send_request(messages, group_id)
+
     def send_notification_async(
         self, messages: json, group_id: str
     ) -> threading.Thread:

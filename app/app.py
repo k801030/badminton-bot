@@ -84,8 +84,31 @@ def wait_for_notification(thread: threading.Thread | None, timeout: float = 10):
         print(f"[DEBUG] LINE notification thread finished.")
 
 
+# Send an error notification to LINE when the flow crashes before the result is sent
+def notify_failure(request: CourtBookingRequest, error: Exception):
+    try:
+        message = line_flex_factory.generate_error_message(
+            date=request.date, account_id=request.account_id, error=error
+        )
+        line_client.send_notification(messages=message, group_id=line_secret.group_id)
+    except Exception as e:
+        print(f"[ERROR] Failed to send failure notification: {e}")
+
+
 # Main handler to process booking request
 def handle_request(request: CourtBookingRequest):
+    try:
+        cart, messages = book_and_build_messages(request)
+    except Exception as e:
+        # nothing has been sent to LINE yet, so let the group know it failed
+        notify_failure(request, e)
+        raise
+
+    notify_and_reserve(cart, messages)
+
+
+# Login, book every slot and build the LINE result message
+def book_and_build_messages(request: CourtBookingRequest):
     print(f"[DEBUG] Starting handle_request with account_id: {request.account_id}")
 
     # Retrieve account credentials from Secret Manager
@@ -146,6 +169,11 @@ def handle_request(request: CourtBookingRequest):
         print(f"[ERROR] Failed to generate Line messages: {e}")
         raise
 
+    return cart, messages
+
+
+# Send the result to LINE, then keep the cart items reserved
+def notify_and_reserve(cart: ShoppingCart, messages: dict):
     # Send async notification to Line group
     notify_thread = None
     try:

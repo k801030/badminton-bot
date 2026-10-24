@@ -179,3 +179,19 @@ def generate_messages(
             "body": body,
         },
     }
+
+
+ERROR_TITLE = "⚠️ 訂場程式執行失敗"
+MAX_ERROR_LENGTH = 200
+
+
+def generate_error_message(date: str, account_id: str, error: Exception) -> json:
+    """
+    Plain text message sent when the booking flow crashes before the
+    normal result notification could be sent (e.g. login failure).
+    """
+    reason = f"{type(error).__name__}: {error}"[:MAX_ERROR_LENGTH]
+    return {
+        "type": "text",
+        "text": f"{ERROR_TITLE}\n日期：{date}\n帳號：{account_id}\n原因：{reason}",
+    }
