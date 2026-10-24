@@ -18,13 +18,24 @@ class BookingStatus(Enum):
     ERROR = "error"
 
 
+SUCCESS_LABEL = "成功"
+FAILURE_LABEL = "失敗"
+NOT_OPEN_LABEL = "未開放"
+
+# the detailed status is kept for logs; LINE only shows 3 states
 STATUS_LABELS = {
-    BookingStatus.SUCCESS: "搶到了",
-    BookingStatus.NOT_OPEN: "未開放",
-    BookingStatus.NO_COURTS: "未開放",
-    BookingStatus.NO_MATCH: "沒搶到",
-    BookingStatus.MISSED: "沒搶到",
-    BookingStatus.ERROR: "系統錯誤",
+    BookingStatus.SUCCESS: SUCCESS_LABEL,
+    BookingStatus.NOT_OPEN: NOT_OPEN_LABEL,
+    BookingStatus.NO_COURTS: NOT_OPEN_LABEL,
+    BookingStatus.NO_MATCH: FAILURE_LABEL,
+    BookingStatus.MISSED: FAILURE_LABEL,
+    BookingStatus.ERROR: FAILURE_LABEL,
+}
+
+LABEL_COLORS = {
+    SUCCESS_LABEL: "#6B9E78",  # muted green
+    FAILURE_LABEL: "#C0716B",  # muted red
+    NOT_OPEN_LABEL: "#AAAAAA",  # grey
 }
 
 
@@ -56,7 +67,10 @@ class BookingResult:
     def label(self) -> str:
         return STATUS_LABELS[self.status]
 
+    @property
+    def color(self) -> str:
+        return LABEL_COLORS[self.label]
+
     def __str__(self):
         text = f"[{self.slot_name}] {self.status.value}"
         return f"{text}: {self.detail}" if self.detail else text
-

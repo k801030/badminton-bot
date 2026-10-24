@@ -191,6 +191,20 @@ def test_generate_messages_includes_slot_reasons():
     ]
     msg = line_flex_factory.generate_messages([], "2026-10-30", "user", results)
     text = str(msg)
-    assert "沒搶到" in text
+    assert "失敗" in text
     assert "場地已被別人搶走" not in text
     assert "未開放" in text
+
+
+def test_three_display_states():
+    from models.booking_result import BookingResult
+
+    def r(status):
+        return BookingResult("18:00", "18:40", status)
+
+    assert r(BookingStatus.SUCCESS).label == "成功"
+    for s in (BookingStatus.NOT_OPEN, BookingStatus.NO_COURTS):
+        assert r(s).label == "未開放"
+        assert r(s).color == "#AAAAAA"
+    for s in (BookingStatus.MISSED, BookingStatus.NO_MATCH, BookingStatus.ERROR):
+        assert r(s).label == "失敗"

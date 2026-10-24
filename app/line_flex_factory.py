@@ -1,6 +1,6 @@
 import json
 
-from models.booking_result import BookingResult, BookingStatus
+from models.booking_result import BookingResult
 from models.shopping_cart import Cartable
 
 SUCCESS_TITLE = "場地已加入購物車 🛒"
@@ -119,11 +119,7 @@ def generate_slot_results(results: list[BookingResult]) -> json:
                         "type": "text",
                         "text": r.label,
                         "size": "sm",
-                        "color": (
-                            "#6B9E78"
-                            if r.status == BookingStatus.SUCCESS
-                            else "#C0716B"
-                        ),
+                        "color": r.color,
                         "align": "end",
                         "wrap": True,
                     },
