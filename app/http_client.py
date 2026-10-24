@@ -3,6 +3,8 @@ import time
 
 import urllib3
 
+from models.booking_result import AddResult
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(maxsize=10, cert_reqs="CERT_NONE", assert_hostname=False)
 
@@ -57,25 +59,31 @@ class CourtClient:
                     print(
                         f"Reservation period of {max_duration_seconds} seconds has ended."
                     )
-                    return {"data": []}
+                    # mark the response so callers can tell "not open yet" from "0 courts"
+                    return {"data": [], "not_ready": True}
                 time.sleep(SLEEP_INTERVAL)
                 continue
 
             return json.loads(r.data.decode("utf-8"))
 
-    def add(self, id) -> bool:
+    def add(self, id) -> AddResult:
         url = "{}/api/activities/cart/add".format(self.host)
         body = {"items": [{"id": id, "type": "purchasableOccurrence"}]}
         r = http.request(
             "POST", url, body=json.dumps(body), headers=self.default_header
         )
         if r.status == 200:
-            return True
+            return AddResult(ok=True, status=r.status)
+        raw = r.data.decode("utf-8")
         print(
-            f"[DEBUG] Failed to add item {id} to cart: status={r.status}, response={r.data.decode('utf-8')}",
+            f"[DEBUG] Failed to add item {id} to cart: status={r.status}, response={raw}",
             flush=True,
         )
-        return False
+        try:
+            message = json.loads(raw).get("message", raw)
+        except (ValueError, AttributeError):
+            message = raw
+        return AddResult(ok=False, status=r.status, message=message)
 
     def cart(self):
         url = "{}/api/activities/cart".format(self.host)
