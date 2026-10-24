@@ -3,7 +3,7 @@ export const Events = [
         "accountId": "1",
         "location": "britannia-leisure-centre",
         "activity": "badminton-40min",
-        "keyword": "Court 1,Court 3",
+        "keyword": ["Court 1", "Court 3"],
         "day_offset": 7,
         "slots": [
             {
@@ -28,7 +28,7 @@ export const Events = [
         "accountId": "2",
         "location": "britannia-leisure-centre",
         "activity": "badminton-40min",
-        "keyword": "Court 2,Court 4",
+        "keyword": ["Court 2", "Court 4"],
         "day_offset": 7,
         "slots": [
             {

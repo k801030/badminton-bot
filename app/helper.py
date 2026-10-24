@@ -65,11 +65,10 @@ def add_missing_items_to_cart(
     return True
 
 
-def select_court(courts: Courts, keyword) -> list[str]:
+def select_court(courts: Courts, keywords: list[str]) -> list[str]:
     """
     Selects court item IDs that match given keyword(s) in their location name.
     """
-    keywords = [k.strip() for k in keyword.split(",")]
     ids = []
     for k in keywords:
         for item in courts.items:
@@ -85,13 +84,13 @@ def book_court(
     date,
     start,
     end,
-    keyword,
+    keywords: list[str],
     max_duration_seconds=15,
     interval_seconds=1,
     add_interval_seconds=0.3,
 ) -> BookingResult:
     """
-    Tries to add a court booking for the specified time range and keyword.
+    Tries to add a court booking for the specified time range and keywords.
     Returns a BookingResult describing why the slot succeeded / failed.
     """
     slot_name = f"[ {start} - {end} ]"
@@ -126,11 +125,11 @@ def book_court(
 
     court_names = [court.name for court in courts.items]
     logger.info("%s Available courts: %s", slot_name, court_names)
-    court_ids = select_court(courts, keyword)
+    court_ids = select_court(courts, keywords)
     if not court_ids:
         return result(
             BookingStatus.NO_MATCH,
-            f"有 {len(court_names)} 個場地，但不符合「{keyword}」",
+            f"有 {len(court_names)} 個場地，但不符合「{'、'.join(keywords)}」",
             court_names,
         )
 

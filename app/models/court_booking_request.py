@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 from datetime_utils import get_date
 
@@ -15,7 +15,7 @@ class CourtBookingRequest:
     account_id: str
     location: str
     activity: str
-    keyword: str
+    keywords: List[str]
     date: str
     slots: List[Slot]
 
@@ -26,7 +26,17 @@ class CourtBookingRequest:
             account_id=data["accountId"],
             location=data["location"],
             activity=data["activity"],
-            keyword=data["keyword"],
+            keywords=parse_keywords(data["keyword"]),
             date=get_date(data["day_offset"]),
             slots=slots,
         )
+
+
+def parse_keywords(value: Union[str, List[str]]) -> List[str]:
+    """
+    Accepts a list of keywords, or the legacy comma separated string
+    (e.g. "Court 1,Court 3") so already scheduled events keep working.
+    """
+    if isinstance(value, str):
+        value = value.split(",")
+    return [k.strip() for k in value if k.strip()]

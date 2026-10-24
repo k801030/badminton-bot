@@ -47,7 +47,7 @@ def book_court_in_parallel(request: CourtBookingRequest) -> list[BookingResult]:
                 request.date,
                 slot.start_time,
                 slot.end_time,
-                request.keyword,
+                request.keywords,
             )
             for slot in request.slots
         ]

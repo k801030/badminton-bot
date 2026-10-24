@@ -13,23 +13,30 @@ courts = Courts(
 
 def test_select_court_single_keyword():
 
-    result = helper.select_court(courts, "London")
+    result = helper.select_court(courts, ["London"])
     assert result == ["1"]
 
 
 def test_select_court_multiple_keywords():
-    result = helper.select_court(courts, "London, Manchester")
+    result = helper.select_court(courts, ["London", "Manchester"])
     assert result == ["1", "2"]
 
 
 def test_select_court_no_match():
-    result = helper.select_court(courts, "Paris")
+    result = helper.select_court(courts, ["Paris"])
     assert result == []
 
 
-def test_select_court_keyword_with_spaces():
-    result = helper.select_court(courts, " London , Manchester")
-    assert result == ["1", "2"]
+def test_parse_keywords_from_list():
+    from models.court_booking_request import parse_keywords
+
+    assert parse_keywords([" London ", "Manchester", ""]) == ["London", "Manchester"]
+
+
+def test_parse_keywords_from_legacy_comma_string():
+    from models.court_booking_request import parse_keywords
+
+    assert parse_keywords(" London , Manchester") == ["London", "Manchester"]
 
 
 def test_book_court_retries_when_initially_empty():
@@ -65,7 +72,7 @@ def test_book_court_retries_when_initially_empty():
         date="2026-10-23",
         start="19:20",
         end="20:00",
-        keyword="Court 1",
+        keywords=["Court 1"],
         max_duration_seconds=5,
         interval_seconds=0.01,
     )
@@ -94,7 +101,7 @@ def test_book_court_times_out_when_always_empty():
         date="2026-10-23",
         start="19:20",
         end="20:00",
-        keyword="Court 1",
+        keywords=["Court 1"],
         max_duration_seconds=0.05,
         interval_seconds=0.02,
     )
@@ -115,7 +122,7 @@ def _court(court_id, name, start="18:00", end="18:40"):
     }
 
 
-def _book(client, keyword="Court 1,Court 3"):
+def _book(client, keywords=["Court 1", "Court 3"]):
     return helper.book_court(
         client=client,
         location="loc",
@@ -123,7 +130,7 @@ def _book(client, keyword="Court 1,Court 3"):
         date="2026-10-30",
         start="18:00",
         end="18:40",
-        keyword=keyword,
+        keywords=keywords,
         max_duration_seconds=0.05,
         interval_seconds=0.01,
     )
@@ -224,7 +231,7 @@ def test_book_court_sleeps_between_add_rounds(monkeypatch):
         date="2026-10-30",
         start="18:00",
         end="18:40",
-        keyword="Court 1",
+        keywords=["Court 1"],
         max_duration_seconds=0.05,
         add_interval_seconds=0.3,
     )

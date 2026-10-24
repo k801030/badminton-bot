@@ -10,7 +10,7 @@ sample_request = {
     "accountId": "1",
     "location": "britannia-leisure-centre",
     "activity": "badminton-40min",
-    "keyword": "Court 1, Court 2, Court 3, Count 4",
+    "keyword": ["Court 1", "Court 2", "Court 3", "Court 4"],
     "day_offset": 7,
     "slots": [
         {"start_time": "07:01", "end_time": "07:02"},

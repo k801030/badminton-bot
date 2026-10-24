@@ -38,7 +38,7 @@ def _request():
             "accountId": "1",
             "location": "loc",
             "activity": "badminton-40min",
-            "keyword": "Court 1",
+            "keyword": ["Court 1"],
             "day_offset": 7,
             "slots": [{"start_time": "18:00", "end_time": "18:40"}],
         }
