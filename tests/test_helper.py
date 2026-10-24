@@ -208,3 +208,24 @@ def test_three_display_states():
         assert r(s).color == "#AAAAAA"
     for s in (BookingStatus.MISSED, BookingStatus.NO_MATCH, BookingStatus.ERROR):
         assert r(s).label == "失敗"
+
+
+def test_book_court_sleeps_between_add_rounds(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr(helper.time, "sleep", lambda s: sleeps.append(s))
+    client = _Client(
+        {"data": [_court("c1", "Court 1")]},
+        AddResult(ok=False, status=422, message="already full"),
+    )
+    helper.book_court(
+        client=client,
+        location="loc",
+        activity="badminton-40min",
+        date="2026-10-30",
+        start="18:00",
+        end="18:40",
+        keyword="Court 1",
+        max_duration_seconds=0.05,
+        add_interval_seconds=0.3,
+    )
+    assert 0.3 in sleeps

@@ -84,6 +84,7 @@ def book_court(
     keyword,
     max_duration_seconds=15,
     interval_seconds=1,
+    add_interval_seconds=0.3,
 ) -> BookingResult:
     """
     Tries to add a court booking for the specified time range and keyword.
@@ -147,6 +148,9 @@ def book_court(
                 print(f"Succeeded to book the slot: {slot_name}")
                 return result(BookingStatus.SUCCESS, available=court_names)
             last_error = describe_add_failure(add_result)
+
+        # back off a little between rounds to avoid being rate limited / blocked
+        time.sleep(add_interval_seconds)
 
 
 def describe_add_failure(add_result) -> str:
