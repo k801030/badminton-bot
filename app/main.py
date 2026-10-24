@@ -8,11 +8,13 @@ from models.court_booking_request import CourtBookingRequest
 
 sample_request = {
     "accountId": "1",
-    "location": "queensbridge-sports-community-centre",
+    "location": "britannia-leisure-centre",
     "activity": "badminton-40min",
-    "keyword": "Court 1,Court 3",
+    "keyword": "Court 1, Court 2, Court 3, Count 4",
     "day_offset": 7,
     "slots": [
+        {"start_time": "07:01", "end_time": "07:02"},
+        {"start_time": "19:20", "end_time": "20:00"},
         {"start_time": "19:20", "end_time": "20:00"},
         {"start_time": "20:00", "end_time": "20:40"},
         {"start_time": "20:40", "end_time": "21:20"},
