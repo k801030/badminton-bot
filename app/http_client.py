@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 
 import urllib3
@@ -7,6 +8,8 @@ from models.booking_result import AddResult
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(maxsize=10, cert_reqs="CERT_NONE", assert_hostname=False)
+
+logger = logging.getLogger(__name__)
 
 
 def not_ready_for_reservation(r):
@@ -54,10 +57,12 @@ class CourtClient:
         while True:
             r = http.request("GET", url, headers=self.default_header)
             if not_ready_for_reservation(r):
-                print(f"[DEBUG] Response from {url}: {r.data.decode('utf-8')}")
+                logger.debug(
+                    "Not ready for reservation yet: %s", r.data.decode("utf-8")
+                )
                 if time.time() - started_at > max_duration_seconds:
-                    print(
-                        f"Reservation period of {max_duration_seconds} seconds has ended."
+                    logger.info(
+                        "Date still not bookable after %ss", max_duration_seconds
                     )
                     # mark the response so callers can tell "not open yet" from "0 courts"
                     return {"data": [], "not_ready": True}
@@ -75,9 +80,8 @@ class CourtClient:
         if r.status == 200:
             return AddResult(ok=True, status=r.status)
         raw = r.data.decode("utf-8")
-        print(
-            f"[DEBUG] Failed to add item {id} to cart: status={r.status}, response={raw}",
-            flush=True,
+        logger.debug(
+            "Failed to add item %s to cart: status=%s, response=%s", id, r.status, raw
         )
         try:
             message = json.loads(raw).get("message", raw)
@@ -92,9 +96,9 @@ class CourtClient:
         if r.status == 200:
             return data
         elif r.status == 409:
-            print("status_code={}, message={}".format(r.status, data))
+            logger.warning("Cart request conflicted (409), retrying")
             time.sleep(2)
             return self.cart()
         else:
-            print("status_code={}, message={}".format(r.status, data))
+            logger.error("Cart request failed: status=%s", r.status)
             return data

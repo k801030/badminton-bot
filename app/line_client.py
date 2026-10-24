@@ -1,10 +1,13 @@
 import json
+import logging
 import threading
 
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 http = urllib3.PoolManager(cert_reqs="CERT_NONE", assert_hostname=False)
+
+logger = logging.getLogger(__name__)
 
 
 class LineClient:
@@ -19,18 +22,18 @@ class LineClient:
         }
         body = {"to": group_id, "messages": [messages]}
 
-        print(f"Sending LINE message to group {group_id}...", flush=True)
         try:
             r = http.request("POST", url, body=json.dumps(body), headers=headers)
             if r.status == 200:
-                print("Successfully sent LINE message.", flush=True)
+                logger.info("Successfully sent LINE message")
             else:
-                print(
-                    f"Failed to send LINE message: status={r.status}, response={r.data.decode('utf-8')}",
-                    flush=True,
+                logger.error(
+                    "Failed to send LINE message: status=%s, response=%s",
+                    r.status,
+                    r.data.decode("utf-8"),
                 )
-        except Exception as e:
-            print(f"Failed to send LINE message error: {e}", flush=True)
+        except Exception:
+            logger.exception("Failed to send LINE message")
 
     def send_notification(self, messages: json, group_id: str):
         """

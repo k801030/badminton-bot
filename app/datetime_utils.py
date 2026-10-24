@@ -1,5 +1,8 @@
 import datetime
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 
 
 def get_date(day):
@@ -22,5 +25,5 @@ def wait_until_next_hour():
     if current.minute == 59:
         wait_seconds = 60 - current.second - (current.microsecond / 1_000_000)
         if wait_seconds > 0:
-            print(f"[DEBUG] Waiting {wait_seconds:.3f}s until the top of the hour...")
+            logger.info("Waiting %.3fs until the top of the hour", wait_seconds)
             time.sleep(wait_seconds)

@@ -1,6 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
+import logging
 import os
 import threading
+
+from log_config import setup_logging
+
+setup_logging()
 
 from datetime_utils import wait_until_next_hour
 import helper
@@ -11,6 +16,8 @@ from models.booking_result import BookingResult, BookingStatus
 from models.court_booking_request import CourtBookingRequest, Slot
 from models.shopping_cart import ShoppingCart
 from secret_manager import SecretManager
+
+logger = logging.getLogger(__name__)
 
 region = os.environ.get("AWS_REGION")
 is_dev = os.environ.get("ENV", "").lower() == "dev"
@@ -40,7 +47,7 @@ def book_court(request: CourtBookingRequest, slot: Slot):
 
 # Book multiple court slots in parallel using ThreadPoolExecutor
 def book_court_in_parallel(request: CourtBookingRequest) -> list[BookingResult]:
-    print(f"[DEBUG] book_court_in_parallel started with {len(request.slots)} slots.")
+    logger.info("Booking %d slots in parallel", len(request.slots))
     results: list[BookingResult] = []
     # the `with` block waits (shutdown(wait=True)) for every slot thread to finish
     with ThreadPoolExecutor(max_workers=len(request.slots)) as executor:
@@ -57,19 +64,21 @@ def book_court_in_parallel(request: CourtBookingRequest) -> list[BookingResult]:
             )
             for slot in request.slots
         ]
-        print(f"[DEBUG] Submitted all tasks to ThreadPoolExecutor.")
-        for i, (slot, f) in enumerate(zip(request.slots, futures)):
+        for slot, f in zip(request.slots, futures):
             try:
                 results.append(f.result())
-                print(f"[DEBUG] Slot {i+1} booking task finished successfully.")
             except Exception as e:
                 # keep going so the other slots are still reported to LINE
-                print(f"[ERROR] Slot {i+1} booking task failed: {e}")
+                logger.exception(
+                    "Booking task for slot %s-%s failed", slot.start_time, slot.end_time
+                )
                 results.append(
                     BookingResult(
                         slot.start_time, slot.end_time, BookingStatus.ERROR, str(e)
                     )
                 )
+    for r in results:
+        logger.info("Slot result: %s", r)
     return results
 
 
@@ -79,9 +88,7 @@ def wait_for_notification(thread: threading.Thread | None, timeout: float = 10):
         return
     thread.join(timeout=timeout)
     if thread.is_alive():
-        print(f"[WARN] LINE notification still running after {timeout}s.")
-    else:
-        print(f"[DEBUG] LINE notification thread finished.")
+        logger.warning("LINE notification still running after %ss", timeout)
 
 
 # Send an error notification to LINE when the flow crashes before the result is sent
@@ -91,8 +98,8 @@ def notify_failure(request: CourtBookingRequest, error: Exception):
             date=request.date, account_id=request.account_id, error=error
         )
         line_client.send_notification(messages=message, group_id=line_secret.group_id)
-    except Exception as e:
-        print(f"[ERROR] Failed to send failure notification: {e}")
+    except Exception:
+        logger.exception("Failed to send failure notification")
 
 
 # Main handler to process booking request
@@ -100,6 +107,7 @@ def handle_request(request: CourtBookingRequest):
     try:
         cart, messages = book_and_build_messages(request)
     except Exception as e:
+        logger.exception("Booking failed for account_id=%s", request.account_id)
         # nothing has been sent to LINE yet, so let the group know it failed
         notify_failure(request, e)
         raise
@@ -109,95 +117,42 @@ def handle_request(request: CourtBookingRequest):
 
 # Login, book every slot and build the LINE result message
 def book_and_build_messages(request: CourtBookingRequest):
-    print(f"[DEBUG] Starting handle_request with account_id: {request.account_id}")
+    logger.info(
+        "Handling request: account_id=%s, date=%s", request.account_id, request.date
+    )
 
-    # Retrieve account credentials from Secret Manager
-    try:
-        account = sm.get_account_by_id(request.account_id)
-        print(f"[DEBUG] Retrieved credentials for account: {account.username}")
-    except Exception as e:
-        print(
-            f"[ERROR] Failed to retrieve credentials for account_id {request.account_id}: {e}"
-        )
-        raise
-
-    # Login to court booking system
-    try:
-        print(f"[DEBUG] Attempting login for user: {account.username}")
-        court_client.login(account.username, account.password)
-        print(f"[DEBUG] Login successful.")
-    except Exception as e:
-        print(f"[ERROR] Login failed for user {account.username}: {e}")
-        raise
+    account = sm.get_account_by_id(request.account_id)
+    court_client.login(account.username, account.password)
+    logger.info("Login successful for account_id=%s", request.account_id)
 
     # Wait until the top of the hour (:00:00) if triggered at minute 59
     wait_until_next_hour()
 
-    # Book all requested slots in parallel
-    try:
-        print(f"[DEBUG] Starting parallel booking for slots.")
-        results = book_court_in_parallel(request)
-        print(f"[DEBUG] Parallel booking completed.")
-        for r in results:
-            print(f"[DEBUG] Slot result: {r}")
-    except Exception as e:
-        print(f"[ERROR] Error during parallel booking: {e}")
-        raise
+    results = book_court_in_parallel(request)
 
-    # Retrieve current shopping cart data after booking
-    try:
-        print(f"[DEBUG] Retrieving cart data.")
-        data = court_client.cart()
-        print(f"[DEBUG] Raw cart data received: {data}")
-        cart = ShoppingCart.from_json(data)
-        print(f"[DEBUG] Parsed cart with {len(cart.items)} items.")
-    except Exception as e:
-        print(f"[ERROR] Failed to retrieve or parse cart: {e}")
-        raise
+    cart = ShoppingCart.from_json(court_client.cart())
+    logger.info("Cart has %d items", len(cart.items))
 
-    # Generate Line messaging notification content
-    try:
-        print(f"[DEBUG] Generating Line messages.")
-        messages = line_flex_factory.generate_messages(
-            items=cart.items,
-            date=request.date,
-            username=account.username,
-            results=results,
-        )
-        print(f"[DEBUG] Generated messages content: {messages}")
-    except Exception as e:
-        print(f"[ERROR] Failed to generate Line messages: {e}")
-        raise
-
+    messages = line_flex_factory.generate_messages(
+        items=cart.items,
+        date=request.date,
+        username=account.username,
+        results=results,
+    )
     return cart, messages
 
 
 # Send the result to LINE, then keep the cart items reserved
 def notify_and_reserve(cart: ShoppingCart, messages: dict):
-    # Send async notification to Line group
-    notify_thread = None
-    try:
-        print(f"[DEBUG] Sending notification to Line group {line_secret.group_id}")
-        notify_thread = line_client.send_notification_async(
-            messages=messages, group_id=line_secret.group_id
-        )
-        print(f"[DEBUG] Notification trigger sent.")
-    except Exception as e:
-        print(f"[ERROR] Failed to send Line notification: {e}")
-        raise
-
+    notify_thread = line_client.send_notification_async(
+        messages=messages, group_id=line_secret.group_id
+    )
     try:
         # If there are items in the cart, reserve them for a period
         if cart.items:
-            print(f"[DEBUG] Cart has items, starting reservation.")
-            try:
-                helper.reserve_the_items_in_cart(court_client, cart)
-                print(f"[DEBUG] Reservation completed.")
-            except Exception as e:
-                print(f"[ERROR] Error during item reservation: {e}")
-                raise
+            helper.reserve_the_items_in_cart(court_client, cart)
         else:
-            print(f"[DEBUG] No items in cart to reserve.")
+            logger.info("No items in cart to reserve")
     finally:
         # Always wait for the notification before the handler returns
         wait_for_notification(notify_thread)
