@@ -86,8 +86,8 @@ def book_court(
     end,
     keywords: list[str],
     max_duration_seconds=15,
-    interval_seconds=1,
-    add_interval_seconds=0.3,
+    interval_seconds=0.15,
+    add_interval_seconds=0.1,
 ) -> BookingResult:
     """
     Tries to add a court booking for the specified time range and keywords.
@@ -142,10 +142,25 @@ def book_court(
             )
 
         for court_id in court_ids:
+            t0 = time.time()
             add_result = client.add(court_id)
+            cost_ms = (time.time() - t0) * 1000
             if add_result:
+                logger.info(
+                    "%s Added court %s successfully in %.0fms",
+                    slot_name,
+                    court_id,
+                    cost_ms,
+                )
                 return result(BookingStatus.SUCCESS, available=court_names)
             last_error = describe_add_failure(add_result)
+            logger.info(
+                "%s Failed to add court %s in %.0fms: %s",
+                slot_name,
+                court_id,
+                cost_ms,
+                last_error,
+            )
 
         # back off a little between rounds to avoid being rate limited / blocked
         time.sleep(add_interval_seconds)
