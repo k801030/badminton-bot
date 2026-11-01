@@ -35,6 +35,7 @@ export class LambdaEventBridge extends cdk.Stack {
             code: lambda.Code.fromAsset(path.join(__dirname, '../../../app')),
             role: lambdaRole,
             timeout: Duration.minutes(15),
+            memorySize: 512,
         });
 
         // Create EventBridge Scheduler schedules for each weekday and account event
