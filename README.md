@@ -88,6 +88,27 @@ Store the account details (username, password) and LINE secrets as SecureStrings
 
 ---
 
+## Multi-Account Booking Strategy & Optimizations
+
+To maximize the probability of booking available courts across multiple accounts without internal collision:
+
+1. **Orthogonal Target Ordering (錯開首選目標)**:
+   - **Account 1**: `["Court 1", "Court 3", "Court 2"]` (首選 Court 1，次選 Court 3，保底 Court 2)
+   - **Account 2**: `["Court 2", "Court 3", "Court 1"]` (首選 Court 2，次選 Court 3，保底 Court 1)
+   - 雙帳號第一擊（Round 1）首選完全錯開，避免內部互踩；將未被列為首選的 Court 3 作為第一備援，當任一帳號首選遇外部競爭時能以最高機率撿漏。
+
+2. **Low-Latency Polling & Fast Failover (低延遲輪詢與重試)**:
+   - 查詢重試間隔（`SLEEP_INTERVAL` 與 `interval_seconds`）由原本的 `1s` 調降為 `0.15s`，避免因伺服器延遲數毫秒開門而白白浪費 1~3 秒黃金時間。
+   - 加購物車重試間隔（`add_interval_seconds`）縮短為 `0.1s`，失敗時以最快速度切換至備援場地。
+
+3. **Lambda Compute Sizing (CPU 算力提升)**:
+   - Lambda `memorySize` 設定為 `512 MB`，確保 AWS Lambda 分配到充足的 vCPU 算力，消除多執行緒並行查詢時的 TLS 加密與 JSON 解析爭搶（Throttling）。
+
+4. **Observability (毫秒級延遲日誌)**:
+   - 每次加入購物車（`client.add`）皆記錄精確毫秒級 RTT 耗時與結果狀態，利於開搶後精準復盤。
+
+---
+
 ## Local Development & Testing
 
 You can run the application locally to test the booking flow with a sample request.
